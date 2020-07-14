@@ -10,6 +10,8 @@ BASE64 Encode에는 +/= 기본형 또는 -_= URL형이 있다.
 
 
 예> java
+<pre>
+<code>
 	public static void main(String[] args) {
 		try {
 			String src0 = "http://test.com:8080/name=가나 다라ㄱ※\n可" ;
@@ -38,3 +40,5 @@ BASE64 Encode에는 +/= 기본형 또는 -_= URL형이 있다.
 			e.printStackTrace();
 		}
 	}
+</code>
+</pre>
