@@ -78,6 +78,7 @@ namespace AN62
         }
 
         private static int[] fromBase62 = new int[128];
+
         private static void fill() {
             for (int i = 0, len = fromBase62.Length; i < len; ++i)
                 fromBase62[i] = -1;
@@ -89,7 +90,7 @@ namespace AN62
         public static string decode(string text)
         {
             int len = text.Length;
-		    if(len % 4 == 1)	throw new ArgumentException("Illegal base62 length");
+            if(len % 4 == 1)    throw new ArgumentException("Illegal base62 length");
 
             fill();
             byte[] dst = new byte[len / 4 * 3 + ((len % 4 > 0) ? len % 4 - 1 : 0)];
@@ -99,38 +100,38 @@ namespace AN62
             char ch = (char)0;
 
             int bi = 0;
-		    for(int i = 0; i < len; ++i) {
-			    ch = text[i] ;
-			    if(ch >= 0x80)
+            for(int i = 0; i < len; ++i) {
+                ch = text[i] ;
+                if(ch >= 0x80)
                     throw new ArgumentException("Illegal base62 character " + ch);
 
                 val = fromBase62[ch] ;
-			    if(val< 0)
+                if(val< 0)
                     throw new ArgumentException("Illegal base62 character " + ch);
 
                 value = value* 61 + val;
-			    if(i % 4 == 3) {
+                if(i % 4 == 3) {
                     for(int j = 2; j >= 0; --j, value /= 0xF0)
-					    tmp[j] = (byte)(value % 0xF0) ;
+                        tmp[j] = (byte)(value % 0xF0) ;
 
-				    value = 0 ;
-				    Array.Copy(tmp, 0, dst, bi, 3);
-				    bi += 3 ;
-			    }
+                    value = 0 ;
+                    Array.Copy(tmp, 0, dst, bi, 3);
+                    bi += 3 ;
+                }
             }
 
             len = len % 4 ;
-		    if(len > 0) {
-			    len -= 1 ;
-			    for(int j = len - 1; j >= 0; --j, value /= 0xF0)
-				    tmp[j] = (byte)(value % 0xF0) ;
+            if(len > 0) {
+                len -= 1 ;
+                for(int j = len - 1; j >= 0; --j, value /= 0xF0)
+                    tmp[j] = (byte)(value % 0xF0) ;
 
                 Array.Copy(tmp, 0, dst, bi, len);
-			    bi += len ;
-		    }
-		
-		    return Encoding.UTF8.GetString(dst, 0, bi);
-	    }
+                bi += len ;
+            }
+        
+            return Encoding.UTF8.GetString(dst, 0, bi);
+        }
 
         public static string bin2txt(byte[] bin)
         {
@@ -336,14 +337,18 @@ namespace AN62
 
         static void Main(string[] args)
         {
-            string src0 = "http://test.com:8080/name=가나 다라ㄱ※\n可";
-            Console.WriteLine("src0:" + src0);
-            string tmp0 = AN62.encode(src0);
-            Console.WriteLine("tmp0:" + tmp0);
-            string out0 = AN62.decode(tmp0);
-            Console.WriteLine("out0:" + out0);
+            string src0 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可" ;
+            Console.WriteLine("src0:" + src0) ;
+            string an62__tmp0 = AN62.encode(src0) ;
+            Console.WriteLine("an62__tmp0:" + an62__tmp0) ;
+            string an62__out0 = AN62.decode(an62__tmp0) ;
+            Console.WriteLine("an62__out0:" + an62__out0) ;
+            string base64_tmp = Convert.ToBase64String(Encoding.UTF8.GetBytes(src0)) ;
+            Console.WriteLine("base64_tmp:" + base64_tmp) ;
+            string base64_out = Encoding.UTF8.GetString(Convert.FromBase64String(base64_tmp)) ;
+            Console.WriteLine("base64_out:" + base64_out) ;
 
-            string src1 = "http://test.com:8080/name=가나 다라ㄱ※\n可🐘"; // UnsupportedEncodingException이 발생하는 경우
+            string src1 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘" ;    // ArgumentException이 발생하는 경우
             Console.WriteLine("src1:" + src1);
             try
             {

@@ -19,7 +19,7 @@
  * @author zhangsob
  *
  * @history 2020-07-03 encode(), decode() 만듦.
- * 			2020-07-14 bin2txt(), txt2bin() 만듦.
+ *          2020-07-14 bin2txt(), txt2bin() 만듦.
  */
 var AN62 = (function() {
 /*********
@@ -97,7 +97,7 @@ var AN62 = (function() {
     }(String.fromCharCode));
     
     var toBase62 = [
-    		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
             'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
             'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
             'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
@@ -135,47 +135,47 @@ var AN62 = (function() {
     } ;
 
     var encode = function(text) {
-		var utf8 = toUTF8(text) ;
-		var ret = [] ;
-		var value = 0 ;
-		var val = 0 ;
-		var len = utf8.length ;
+        var utf8 = toUTF8(text) ;
+        var ret = [] ;
+        var value = 0 ;
+        var val = 0 ;
+        var len = utf8.length ;
         var tmp = [] ;
         var i = 0, j = 0 ;
-		for(i = 0; i < len; ++i) {
+        for(i = 0; i < len; ++i) {
             val = utf8[i] ;
-			if(val >= 0xF0)	{
-				for(j = 0; j < text.length; ++j)
-					if(text.codePointAt(j) > 0xFFFF)
-						throw "Illegal base62 character index " + j + " " + text.substring(j, j+2) ;
-			}
-			
+            if(val >= 0xF0)    {
+                for(j = 0; j < text.length; ++j)
+                    if(text.codePointAt(j) > 0xFFFF)
+                        throw "Illegal base62 character index " + j + " " + text.substring(j, j+2) ;
+            }
+            
             value = value * 0xF0 + val ;
 
-			if(i % 3 == 2) {
-				for(j = 3; j >= 0; --j, value = Math.floor(value / 61))
-					tmp[j] = toBase62[value % 61];
+            if(i % 3 == 2) {
+                for(j = 3; j >= 0; --j, value = Math.floor(value / 61))
+                    tmp[j] = toBase62[value % 61];
 
                 for(j = 0; j <= 3; ++j)
                     ret.push(tmp[j]) ;
 
-				value = 0 ;
-			}
-		}
-		
-		len = utf8.length % 3 ;
-		if(len > 0) {			
-			for(j = len; j >= 0; --j, value = Math.floor(value / 61))
-				tmp[j] = toBase62[value % 61] ;
+                value = 0 ;
+            }
+        }
+        
+        len = utf8.length % 3 ;
+        if(len > 0) {
+            for(j = len; j >= 0; --j, value = Math.floor(value / 61))
+                tmp[j] = toBase62[value % 61] ;
             
             for(j = 0; j <= len; ++j)
-			    ret.push(tmp[j]) ;
-		}
-		
-		return ret.join('') ;
-	} ;
-	
-	var fromBase62 = Array(128) ;
+                ret.push(tmp[j]) ;
+        }
+        
+        return ret.join('') ;
+    } ;
+    
+    var fromBase62 = Array(128) ;
     for (i = 0; i < fromBase62.length; ++i)
         fromBase62[i] = -1 ;
     for (i = 0; i < toBase62.length; ++i)
@@ -218,69 +218,69 @@ var AN62 = (function() {
         return ret ;
     } ;
 
-	var decode = function(text) {
-		var len = text.length ;
-		if(len % 4 == 1)	throw "Illegal base62 length" ;
-		
-		var dst = [] ;
-		var tmp = [] ;
-		var value = 0 ;
-		var ch = 0 ;
-		
+    var decode = function(text) {
+        var len = text.length ;
+        if(len % 4 == 1)    throw "Illegal base62 length" ;
+        
+        var dst = [] ;
+        var tmp = [] ;
+        var value = 0 ;
+        var ch = 0 ;
+        
         var bi = 0 ;
         var i = 0, j = 0;
-		for(i = 0; i < len; ++i) {
-			ch = text.charCodeAt(i) ;
-			if(ch >= 0x80)
+        for(i = 0; i < len; ++i) {
+            ch = text.charCodeAt(i) ;
+            if(ch >= 0x80)
                 throw "Illegal base62 character " + ch ;
-			
-			value = value * 61 + fromBase62[ch] ;
+            
+            value = value * 61 + fromBase62[ch] ;
 
-			if(i % 4 == 3) {
-				for(j = 2; j >= 0; --j, value = Math.floor(value / 0xF0))
+            if(i % 4 == 3) {
+                for(j = 2; j >= 0; --j, value = Math.floor(value / 0xF0))
                     tmp[j] = value % 0xF0 ;
 
                 for(j = 0; j < 3; ++j)
                     dst[bi+j] = tmp[j] ;
 
-				bi += 3 ;
-			}
-		}
-		
-		len = len % 4 ;
-		if(len > 0) {
-			len -= 1 ;
-			for(j = len-1; j >= 0; --j, value = Math.floor(value / 0xF0))
+                bi += 3 ;
+            }
+        }
+        
+        len = len % 4 ;
+        if(len > 0) {
+            len -= 1 ;
+            for(j = len-1; j >= 0; --j, value = Math.floor(value / 0xF0))
                 tmp[j] = value % 0xF0 ;
 
             for(j = 0; j < len; ++j)
                 dst[bi+j] = tmp[j] ;
 
-			bi += len ;
-		}
+            bi += len ;
+        }
 
-		return fromUTF8(dst) ;
+        return fromUTF8(dst) ;
     } ;
 
-	var bin2txt = function(bin) {
-		var ret = [] ;
-		var value = 0 ;
-		var len = Math.floor(bin.length / 3) * 3 ;
-		var tmp = [] ;
-		var FX_bit = 0 ;
-		var i = 0, j = 0 ;
+    var bin2txt = function(bin) {
+        var ret = [] ;
+        var value = 0 ;
+        var len = Math.floor(bin.length / 3) * 3 ;
+        var tmp = [] ;
+        var FX_bit = 0 ;
+        var i = 0, j = 0 ;
 
-		for(i = 0; i < len; i += 3) {
-			FX_bit = 0 ;
-			value = 0 ;
-			
-			for(j = 0; j < 3; ++j)
-				if((bin[i+j] & 0xF0) == 0xF0) {
+        for(i = 0; i < len; i += 3) {
+            FX_bit = 0 ;
+            value = 0 ;
+            
+            for(j = 0; j < 3; ++j)
+                if((bin[i+j] & 0xF0) == 0xF0) {
                     FX_bit = 1 ;
                     break ;
-				}
+                }
 
-			if (FX_bit != 0) {
+            if (FX_bit != 0) {
                 ret.push('z') ;
 
                 FX_bit = 0 ;
@@ -296,31 +296,31 @@ var AN62 = (function() {
                     value <<= 4 ;
                     value |= bin[i+j] & 0x0F ;
                 }
-				value |= FX_bit << 20 ;
-			}
-			else {
-				for(j = 0; j < 3; ++j)
-					value = value * 0xF0 + (bin[i+j] & 0xFF) ;
-			}
+                value |= FX_bit << 20 ;
+            }
+            else {
+                for(j = 0; j < 3; ++j)
+                    value = value * 0xF0 + (bin[i+j] & 0xFF) ;
+            }
 
-			for(j = 3; j >= 0; --j, value = Math.floor(value / 61))
+            for(j = 3; j >= 0; --j, value = Math.floor(value / 61))
                 tmp[j] = toBase62[value % 61] ;
                 
             for(j = 0; j <= 3; ++j)
-			    ret.push(tmp[j]) ;
-		}
+                ret.push(tmp[j]) ;
+        }
 
-		len = bin.length % 3 ;
-		if(len > 0) {
-			FX_bit = 0 ;
-			value = 0 ;
+        len = bin.length % 3 ;
+        if(len > 0) {
+            FX_bit = 0 ;
+            value = 0 ;
             for(j = 0; j < len; ++j)
                 if((bin[i+j] & 0xF0) == 0xF0) {
                     FX_bit <<= 1 ;
                     break ;
                 }
 
-			if (FX_bit != 0) {
+            if (FX_bit != 0) {
                 ret.push('z') ;
 
                 FX_bit = 0 ;
@@ -336,93 +336,105 @@ var AN62 = (function() {
                     value <<= 4 ;
                     value |= bin[i+j] & 0x0F ;
                 }
-				value |= FX_bit << ((len == 1) ? 4 : 12) ;
-			}
-			else {
-				for(j = 0; j < len; ++j)
-					value = value * 0xF0 + (bin[i+j] & 0xFF) ;
-			}
+                value |= FX_bit << ((len == 1) ? 4 : 12) ;
+            }
+            else {
+                for(j = 0; j < len; ++j)
+                    value = value * 0xF0 + (bin[i+j] & 0xFF) ;
+            }
 
-			for(j = len; j >= 0; --j, value = Math.floor(value / 61))
-				tmp[j] = toBase62[value % 61] ;
+            for(j = len; j >= 0; --j, value = Math.floor(value / 61))
+                tmp[j] = toBase62[value % 61] ;
 
             for(j = 0; j <= len; ++j)
-			    ret.push(tmp[j]) ;
-		}
-			
-		return ret.join('') ;
+                ret.push(tmp[j]) ;
+        }
+            
+        return ret.join('') ;
     }
     
     var txt2bin = function(txt) {
-		var len = txt.length ;
-		var dst = [] ;
-		var tmp = [] ;
-		var value = 0 ;
-		var val = 0 ;
-		var ch = 0 ;
-		var count = 0 ;	
-		var bi = 0 ;
+        var len = txt.length ;
+        var dst = [] ;
+        var tmp = [] ;
+        var value = 0 ;
+        var val = 0 ;
+        var ch = 0 ;
+        var count = 0 ;    
+        var bi = 0 ;
         var isFX = 0 ;
         var i = 0, j = 0 ;
-		for(i = 0; i < len; ++i) {
-			ch = txt.charCodeAt(i) ;
-			if(ch >= 0x80)
+        for(i = 0; i < len; ++i) {
+            ch = txt.charCodeAt(i) ;
+            if(ch >= 0x80)
                 throw "Illegal base62 character " + ch ;
-				
-			val = fromBase62[ch] ;
-			if(val < 0) {
-				if(val == -2 && (count % 4) == 0 && isFX == 0) {
-					isFX = 1 ;
-					continue ;
-				}
+                
+            val = fromBase62[ch] ;
+            if(val < 0) {
+                if(val == -2 && (count % 4) == 0 && isFX == 0) {
+                    isFX = 1 ;
+                    continue ;
+                }
 
                 throw "Illegal base62 character " + ch ;
-			}
-			++count ;
+            }
+            ++count ;
 
-			value = value * 61 + val ;
-			if(count % 4 == 0) {
-				if (isFX != 0) {
-					isFX = value >> 20 ;
-					for (j = 2, mask=1; j >= 0; --j, mask <<= 1) {
-						tmp[j] = value & 0x0F ;	value >>= 4 ;
-						if ((isFX & mask) == mask)	{	tmp[j] |= 0xF0 ;	}
-						else						{	tmp[j] |= (value & 0x0F) << 4 ;	value >>= 4 ;	}
-					}
-					isFX = 0 ;
-				}
-				else {
-					for(j = 2; j >= 0; --j, value = Math.floor(value / 0xF0))
-						tmp[j] = value % 0xF0 ;
-				}
+            value = value * 61 + val ;
+            if(count % 4 == 0) {
+                if (isFX != 0) {
+                    isFX = value >> 20 ;
+                    for (j = 2, mask=1; j >= 0; --j, mask <<= 1) {
+                        tmp[j] = value & 0x0F ;
+                        value >>= 4 ;
+                        if ((isFX & mask) == mask) {
+                            tmp[j] |= 0xF0 ;
+                        }
+                        else {
+                            tmp[j] |= (value & 0x0F) << 4 ;
+                            value >>= 4 ;
+                        }
+                    }
+                    isFX = 0 ;
+                }
+                else {
+                    for(j = 2; j >= 0; --j, value = Math.floor(value / 0xF0))
+                        tmp[j] = value % 0xF0 ;
+                }
 
                 value = 0 ;
                 for(j = 0; j < 3; ++j)
-                    dst[bi++] = tmp[j] ;	
-			}
-		}
+                    dst[bi++] = tmp[j] ;    
+            }
+        }
 
-		len = count % 4 ;
-		if(len > 0) {
-			len -= 1 ;
-			if (isFX != 0) {
-				isFX = value >> ((len >= 2) ? 12 : 4) ;
-				for (j = len-1, mask=1; j >= 0; --j, mask <<= 1) {
-					tmp[j] = value & 0x0F ;	value >>= 4 ;
-					if ((isFX & mask) == mask)	{	tmp[j] |= 0xF0 ;	}
-					else						{	tmp[j] |= (value & 0x0F) << 4 ;	value >>= 4 ;	}
-				}
-			}
-			else {
-				for(j = len-1; j >= 0; --j, value = Math.floor(value / 0xF0))
-					tmp[j] = value % 0xF0 ;
-			}
+        len = count % 4 ;
+        if(len > 0) {
+            len -= 1 ;
+            if (isFX != 0) {
+                isFX = value >> ((len >= 2) ? 12 : 4) ;
+                for (j = len-1, mask=1; j >= 0; --j, mask <<= 1) {
+                    tmp[j] = value & 0x0F ;
+                    value >>= 4 ;
+                    if ((isFX & mask) == mask) {
+                        tmp[j] |= 0xF0 ;
+                    }
+                    else {
+                        tmp[j] |= (value & 0x0F) << 4 ;
+                        value >>= 4 ;
+                    }
+                }
+            }
+            else {
+                for(j = len-1; j >= 0; --j, value = Math.floor(value / 0xF0))
+                    tmp[j] = value % 0xF0 ;
+            }
 
             for(j = 0; j < len; ++j)
                 dst[bi++] = tmp[j] ;
-		}
+        }
 
-		return dst ;
+        return dst ;
     }
     
     return {
@@ -436,19 +448,20 @@ var AN62 = (function() {
 }()) ;
 
 function print(msg) {
-    if(typeof document !== 'undefined')    document.write(msg.replace(/\n/g,'<br/>') + '<br/>') ;
+    if(typeof document !== 'undefined' && typeof msg === 'string')
+        document.write(msg.replace(/\n/g,'<br/>') + '<br/>') ;
     console.log(msg) ;
 }
 
 try {
-    var src0 = "http://test.com:8080/name=가나 다라ㄱ※\n可" ;
+    var src0 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可" ;
     print("src0:" + src0) ;
     var tmp0 = AN62.encode(src0) ;
     print("tmp0:" + tmp0) ;
     var out0 = AN62.decode(tmp0) ;
     print("out0:" + out0) ;
 
-    var src1 = "http://test.com:8080/name=가나 다라ㄱ※\n可🐘" ;	// Exception이 발생하는 경우
+    var src1 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘" ;    // Exception이 발생하는 경우
     print("src1:" + src1) ;
     try {
         var tmp1 = AN62.encode(src1) ;

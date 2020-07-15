@@ -1,5 +1,6 @@
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.Base64;
 
 /**
  * AN62(AlphaNumeric62, BASE62)란.. Text에서 특수문자를 제거한 숫자(10)+영문대문자(26)+영문소문자(26) = 62가지 문자로 변환하기
@@ -25,15 +26,15 @@ import java.util.Arrays;
  * 			2020-07-14 bin2txt(), txt2bin() 만듦.
  */
 public class AN62 {
-    private static final char[] toBase62 = {
-    		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-            'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-            'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-    };
-    
-    public static String encode(String text) throws UnsupportedEncodingException {
+	private static final char[] toBase62 = {
+		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+		'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+		'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+		'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+		'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+	};
+
+	public static String encode(String text) throws UnsupportedEncodingException {
 		byte[] utf8 = text.getBytes("utf-8");
 		StringBuilder ret = new StringBuilder() ;
 		int value = 0 ;
@@ -47,55 +48,55 @@ public class AN62 {
 					if(text.codePointAt(j) > 0xFFFF)
 						throw new UnsupportedEncodingException("Illegal base62 character index " + j + " " + text.substring(j, j+2)) ;
 			}
-			
+
 			value = value * 0xF0 + val;
 			if(i % 3 == 2) {
 				for(int j = 3; j >= 0; --j, value /= 61)
 					tmp[j] = toBase62[value % 61];
 
-				value = 0 ;				
+				value = 0 ;
 				ret.append(tmp, 0, 4) ;
 			}
 		}
 		
 		len = utf8.length % 3 ;
-		if(len > 0) {			
+		if(len > 0) {
 			for(int j = len; j >= 0; --j, value /= 61)
 				tmp[j] = toBase62[value % 61];
-			
+
 			ret.append(tmp, 0, len+1) ;
 		}
-		
+
 		return ret.toString() ;
 	}
-	
+
 	private static final int[] fromBase62 = new int[128] ;
-    static {
-        Arrays.fill(fromBase62, -1);
-        for (int i = 0, len = toBase62.length; i < len; i++)
-            fromBase62[toBase62[i]] = i;
-        fromBase62['z'] = -2;
-    }
-    
+	static {
+		Arrays.fill(fromBase62, -1);
+		for (int i = 0, len = toBase62.length; i < len; i++)
+			fromBase62[toBase62[i]] = i;
+		fromBase62['z'] = -2;
+	}
+
 	public static String decode(String text) throws UnsupportedEncodingException {
 		int len = text.length() ;
 		if(len % 4 == 1)	throw new IllegalArgumentException("Illegal base62 length") ;
-		
+
 		byte[] dst = new byte[len / 4 * 3 + ((len % 4 > 0) ? len%4 - 1 : 0)] ;
 		byte[] tmp = new byte[3] ;
 		int value = 0 ;
 		int val = 0 ;
 		char ch = 0 ;
-		
+
 		int bi = 0 ;
 		for(int i = 0; i < len; ++i) {
 			ch = text.charAt(i) ;
 			if(ch >= 0x80)
-                throw new IllegalArgumentException("Illegal base62 character " + ch) ;
+				throw new IllegalArgumentException("Illegal base62 character " + ch) ;
 			
 			val = fromBase62[ch] ;
 			if(val < 0)
-                throw new IllegalArgumentException("Illegal base62 character " + ch) ;
+				throw new IllegalArgumentException("Illegal base62 character " + ch) ;
 			
 			value = value * 61 + val;
 			if(i % 4 == 3) {
@@ -107,7 +108,7 @@ public class AN62 {
 				bi += 3 ;
 			}
 		}
-		
+
 		len = len % 4 ;
 		if(len > 0) {
 			len -= 1 ;
@@ -117,10 +118,10 @@ public class AN62 {
 			System.arraycopy(tmp, 0, dst, bi, len);
 			bi += len ;
 		}
-		
+
 		return new String(dst, 0, bi, "utf-8");
 	}
-	
+
 	public static String bin2txt(byte[] bin)
 	{
 		StringBuilder ret = new StringBuilder() ;
@@ -143,7 +144,7 @@ public class AN62 {
 
 			if (FX_bit != 0) {
 				ret.append('z') ;
-				
+
 				FX_bit = 0 ;	
 				for(int j = 0; j < 3; ++j) {
 					FX_bit <<= 1 ;
@@ -183,7 +184,7 @@ public class AN62 {
 
 			if (FX_bit != 0) {
 				ret.append('z') ;
-			
+
 				FX_bit = 0 ;
 				for(int j = 0; j < len; ++j) {
 					FX_bit <<= 1 ;
@@ -198,7 +199,7 @@ public class AN62 {
 					value <<= 4 ;
 					value |= bin[i+j] & 0x0F ;
 				}
-				
+
 				value |= FX_bit << ((len == 1) ? 4 : 12) ;
 			}
 			else {
@@ -211,14 +212,14 @@ public class AN62 {
 
 			ret.append(tmp, 0, len+1) ;
 		}
-			
+
 		return ret.toString() ;
 	}
 	
 	public static byte[] txt2bin(String txt)
 	{
 		int len = txt.length() ;
-		
+
 		byte[] dst = new byte[len / 4 * 3 + ((len % 4 > 0) ? len%4 - 1 : 0)] ;
 		byte[] tmp = new byte[3] ;
 
@@ -231,8 +232,8 @@ public class AN62 {
 		for(int i = 0; i < len; ++i) {
 			ch = txt.charAt(i) ;
 			if(ch >= 0x80)
-                throw new IllegalArgumentException("Illegal base62 character " + ch) ;
-				
+				throw new IllegalArgumentException("Illegal base62 character " + ch) ;
+
 			val = fromBase62[ch] ;
 			if(val < 0) {
 				if(val == -2 && (count % 4) == 0 && isFX == 0) {
@@ -240,7 +241,7 @@ public class AN62 {
 					continue ;
 				}
 
-                throw new IllegalArgumentException("Illegal base62 character " + ch) ;
+				throw new IllegalArgumentException("Illegal base62 character " + ch) ;
 			}
 			++count ;
 
@@ -262,7 +263,7 @@ public class AN62 {
 
 				value = 0 ;
 				System.arraycopy(tmp, 0, dst, bi, 3) ;
-				bi += 3 ;			
+				bi += 3 ;
 			}
 		}
 
@@ -294,8 +295,8 @@ public class AN62 {
 
 		return dst ;
 	}
-	
-/******	
+
+/******
 	public static void print(byte[] bin) {
 		for(int i = 0, len = bin.length; i < len; ++i) {
 			System.out.format("%02X ", bin[i]) ;
@@ -307,17 +308,21 @@ public class AN62 {
 		System.out.println();
 	}
 ******/
-	
+
 	public static void main(String[] args) {
 		try {
-			String src0 = "http://test.com:8080/name=가나 다라ㄱ※\n可" ;
+			String src0 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可" ;
 			System.out.println("src0:" + src0) ;
-			String tmp0 = AN62.encode(src0) ;
-			System.out.println("tmp0:" + tmp0) ;
-			String out0 = AN62.decode(tmp0) ;
-			System.out.println("out0:" + out0) ;
-			
-			String src1 = "http://test.com:8080/name=가나 다라ㄱ※\n可🐘" ;	// UnsupportedEncodingException이 발생하는 경우
+			String an62__tmp0 = AN62.encode(src0) ;
+			System.out.println("an62__tmp0:" + an62__tmp0) ;
+			String an62__out0 = AN62.decode(an62__tmp0) ;
+			System.out.println("an62__out0:" + an62__out0) ;
+			String base64_tmp = java.util.Base64.getEncoder().encodeToString(src0.getBytes("utf8")) ;
+			System.out.println("base64_tmp:" + base64_tmp) ;
+			String base64_out = new String(java.util.Base64.getDecoder().decode(base64_tmp), "utf8") ;
+			System.out.println("base64_out:" + base64_out) ;
+
+			String src1 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘" ;	// UnsupportedEncodingException이 발생하는 경우
 			System.out.println("src1:" + src1) ;
 			try {
 				String tmp1 = AN62.encode(src1) ;
@@ -326,11 +331,11 @@ public class AN62 {
 				System.out.println("out1:" + out1) ;
 			} catch(UnsupportedEncodingException uee) {
 				System.err.println(uee) ;
-				
+
 				String tmp2 = AN62.bin2txt(src1.getBytes("utf8")) ;
 				System.out.println("tmp2:" + tmp2) ;
 				String out2 = new String(AN62.txt2bin(tmp2), "utf8") ;
-				System.out.println("out2:" + out2) ;				
+				System.out.println("out2:" + out2) ;
 			}
 		} catch(Exception e) {
 			e.printStackTrace();
