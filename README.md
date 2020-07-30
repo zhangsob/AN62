@@ -51,7 +51,7 @@ public static void main(String[] args) {
 		String base64_out = new String(java.util.Base64.getDecoder().decode(base64_tmp), "utf8") ;
 		System.out.println("base64_out:" + base64_out) ;
 
-		String src1 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘" ;	// ValueError가 발생하는 경우
+		String src1 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘" ;	// UnsupportedEncodingException이 발생하는 경우
 		System.out.println("src1:" + src1) ;
 		try {
 			String tmp1 = AN62.encode(src1) ;
@@ -212,7 +212,7 @@ if __name__ == '__main__':
     base64_out = base64.b64decode(base64_tmp.encode('utf8')).decode('utf8')
     print('base64_out:' + base64_out)
 
-    src1 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘" # UnsupportedEncodingException이 발생하는 경우
+    src1 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘" # ValueError가 발생하는 경우
     print("src1:" + src1)
     try :
         tmp1 = AN62.encode(src1)
