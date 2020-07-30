@@ -32,6 +32,7 @@ BASE64 Encode의 원리도
 - javascript
 - c#
 - cpp
+- python
 
 ## 예
 - java
@@ -50,7 +51,7 @@ public static void main(String[] args) {
 		String base64_out = new String(java.util.Base64.getDecoder().decode(base64_tmp), "utf8") ;
 		System.out.println("base64_out:" + base64_out) ;
 
-		String src1 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘" ;	// UnsupportedEncodingException이 발생하는 경우
+		String src1 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘" ;	// ValueError가 발생하는 경우
 		System.out.println("src1:" + src1) ;
 		try {
 			String tmp1 = AN62.encode(src1) ;
@@ -191,6 +192,51 @@ out0:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 src1:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可🐘
 Illegal base62 character index 43 🐘
+tmp2:QVOZSTTLC33NTIeJPEfTElRKEFxJOid7CixjSEKmOiZwFiOXWiaIco6jfdmdXfmjXfyWWfSTwG7YzIeAi2U
+out2:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可🐘
+```
+
+## 예
+- python
+```python
+if __name__ == '__main__':
+    src0 = 'http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可'
+    print('src0:' + src0)
+    an62__tmp0 = AN62.encode(src0)
+    print('an62__tmp0:' + an62__tmp0)
+    an62__out0 = AN62.decode(an62__tmp0)
+    print('an62__out0:' + an62__out0)
+    base64_tmp = base64.b64encode(src0.encode('utf8')).decode('utf8')
+    print('base64_tmp:' + base64_tmp)
+    base64_out = base64.b64decode(base64_tmp.encode('utf8')).decode('utf8')
+    print('base64_out:' + base64_out)
+
+    src1 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘" # UnsupportedEncodingException이 발생하는 경우
+    print("src1:" + src1)
+    try :
+        tmp1 = AN62.encode(src1)
+        print("tmp1:" + tmp1)
+        out1 = AN62.decode(tmp1)
+        print("out1:" + out1)
+    except ValueError :
+        tmp2 = AN62.bin2txt(src1.encode("utf8"))
+        print("tmp2:" + tmp2)
+        out2 = AN62.txt2bin(tmp2).decode("utf8")
+        print("out2:" + out2)
+```
+-----------------------------------------------------------------------------------
+```
+src0:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可
+an62__tmp0:QVOZSTTLC33NTIeJPEfTElRKEFxJOid7CixjSEKmOiZwFiOXWiaIco6jfdmdXfmjXfyWWfSTwG7Y
+an62__out0:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可
+base64_tmp:aHR0cDovL3Rlc3QuY29tOjgwODAvYW42Mi5kbz9uYW1lPeqwgOuCmOuLpCDjhLHjhLTigLsK5Y+v
+base64_out:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可
+src1:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可🐘
 tmp2:QVOZSTTLC33NTIeJPEfTElRKEFxJOid7CixjSEKmOiZwFiOXWiaIco6jfdmdXfmjXfyWWfSTwG7YzIeAi2U
 out2:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可🐘
