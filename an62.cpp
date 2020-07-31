@@ -21,8 +21,12 @@ std::string an62::encode(const std::wstring& text)
 	char tmp[4] ;
 	for(int i = 0; i < len; ++i) {
 		val = (utf8[i] & 0xFF) ;
-		if(val >= 0xF0)	return "" ;
-			
+		if(val >= 0xF0)	{
+			an62::invalid_character_exception ice ;
+			ice.msg = "Illegal base62 character" ;
+			throw ice ;
+		}
+
 		value = value * 0xF0 + val;
 		if(i % 3 == 2) {
 			for(int j = 3; j >= 0; --j, value /= 61)
@@ -31,15 +35,15 @@ std::string an62::encode(const std::wstring& text)
 			ret.append(tmp, tmp+4) ;
 		}
 	}
-		
+
 	len = utf8.length() % 3 ;
-	if(len > 0) {			
+	if(len > 0) {
 		for(int j = len; j >= 0; --j, value /= 61)
 			tmp[j] = toBase62[(int)(value % 61)];
-			
+
 		ret.append(tmp, tmp + len+1) ;
 	}
-		
+
 	return ret ;
 }
 
@@ -47,8 +51,8 @@ std::wstring an62::decode(const std::string& text)
 {
 	int len = text.length() ;
 	if(len % 4 == 1)	return L"" ;
-	
-	std::vector<unsigned char> dst ;	
+
+	std::vector<unsigned char> dst ;
 	dst.resize(len / 4 * 3 + ((len % 4 > 0) ? len%4 - 1 : 0), 0x00) ;
 	std::vector<unsigned char> tmp ;
 	tmp.resize(3, 0x00) ;
@@ -62,7 +66,7 @@ std::wstring an62::decode(const std::string& text)
 	int value = 0 ;
 	int val = 0 ;
 	char ch = 0 ;
-		
+
 	int bi = 0 ;
 	for(int i = 0; i < len; ++i) {
 		ch = text[i] ;
@@ -81,7 +85,7 @@ std::wstring an62::decode(const std::string& text)
 			value = 0 ;
 		}
 	}
-		
+
 	len = len % 4 ;
 	if(len > 0) {
 		len -= 1 ;
@@ -91,7 +95,7 @@ std::wstring an62::decode(const std::string& text)
 		memcpy(&dst[bi], &tmp[0], len) ;
 		bi += len ;
 	}
-	
+
 	dst.resize(bi) ;
 	std::string utf8(dst.cbegin(), dst.cend()) ;
 	return utf8_to_wstring(utf8) ;
@@ -171,7 +175,7 @@ std::string	an62::bin2txt(const std::vector<unsigned char>& bin)
 
 		ret.append(tmp, tmp+len+1) ;
 	}
-		
+
 	return ret ;
 }
 
@@ -179,7 +183,7 @@ std::vector<unsigned char> an62::txt2bin(const std::string& txt)
 {
 	int len = txt.length() ;
 	
-	std::vector<unsigned char> dst ;	
+	std::vector<unsigned char> dst ;
 	dst.resize(len / 4 * 3 + ((len % 4 > 0) ? len%4 - 1 : 0), 0x00) ;
 
 	std::vector<unsigned char> tmp ;
@@ -230,7 +234,7 @@ std::vector<unsigned char> an62::txt2bin(const std::string& txt)
 			value = 0 ;
 
 			memcpy(&dst[bi], &tmp[0], 3) ;
-			bi += 3 ;			
+			bi += 3 ;
 		}
 	}
 

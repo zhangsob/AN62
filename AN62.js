@@ -16,7 +16,7 @@
  *        0xF0 ~ 0xFF을 escape하는 용도로 하여 Binary를 Text화 일반적인 encoding하는데 사용하였다.
  *        bin2txt()함수
  *        
- * @author zhangsob
+ * @author zhangsob@gmail.com
  *
  * @history 2020-07-03 encode(), decode() 만듦.
  *          2020-07-14 bin2txt(), txt2bin() 만듦.
@@ -105,8 +105,8 @@ var AN62 = (function() {
     ];
     
     var toUTF8 = function(text) {
-        var i = 0, unicode = 0, ret = [], j = 0 ;
-        for(i = 0; i < text.length; ++i) {
+        var i = 0, unicode = 0, ret = [], j = 0, len = text.length ;
+        for(i = 0; i < len; ++i) {
             unicode = text.codePointAt(i) ;
             if(unicode < 0x80) {
                 ret[j++] = unicode ;
@@ -183,8 +183,8 @@ var AN62 = (function() {
     fromBase62['z'.charCodeAt(0)] = -2 ;
 
     var fromUTF8 = function(utf8) {
-        var val = 0, i = 0, count = 0, value = 0, ret = '' ;
-        for(i = 0; i < utf8.length; ++i) {
+        var val = 0, i = 0, count = 0, value = 0, len = utf8.length, ret = '' ;
+        for(i = 0; i < len; ++i) {
             val = utf8[i] ;
             if(count == 0) {
                 if((val & 0xF8) == 0xF0) {
@@ -205,7 +205,7 @@ var AN62 = (function() {
                 }
             }
             else {
-                if((val & 0xC0) != 0x80) throw "Illegal base62 character" ;
+                if((val & 0xC0) != 0x80) throw "Illegal UTF8" ;
 
                 value <<= 6 ;
                 value |= val & 0x3F ;
@@ -309,7 +309,7 @@ var AN62 = (function() {
             for(j = 0; j <= 3; ++j)
                 ret.push(tmp[j]) ;
         }
-
+        
         len = bin.length % 3 ;
         if(len > 0) {
             FX_bit = 0 ;
@@ -455,14 +455,15 @@ function print(msg) {
 
 try {
     var src0 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可" ;
-    print("src0:" + src0) ;
+    print('src0['+src0.length+']:' + src0) ;
     var tmp0 = AN62.encode(src0) ;
     print("tmp0:" + tmp0) ;
     var out0 = AN62.decode(tmp0) ;
     print("out0:" + out0) ;
 
+    // [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
     var src1 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘" ;    // Exception이 발생하는 경우
-    print("src1:" + src1) ;
+    print('src1['+src1.length+']:' + src1) ;
     try {
         var tmp1 = AN62.encode(src1) ;
         print("tmp1:" + tmp1) ;

@@ -3,8 +3,13 @@
 
 #include <string>
 #include <vector>
+#include <exception>
 
 struct an62 {
+struct invalid_character_exception : std::exception {
+    const char* what() const noexcept { return msg.c_str(); }
+    std::string msg ;
+};
 static std::string	bin2txt(const std::vector<unsigned char>& bin) ;
 static std::vector<unsigned char> txt2bin(const std::string& txt) ;
 static std::string	encode(const std::wstring& text) ;

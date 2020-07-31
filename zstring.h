@@ -4,8 +4,6 @@
 #include <string>
 #include <vector>
 
-bool isSystemUTF8() ;
-
 std::string fstr(const char *format, ...) ;
 int toInteger(const std::string& digit, int default_value) ;
 
@@ -23,7 +21,5 @@ std::string wstring2system(const std::wstring& unicode) ;
 
 std::string utf8_to_system(const std::string& txt) ;
 std::string system2utf8(const std::string& txt) ;
-
-std::string base64_encode(const std::vector<unsigned char>& binary) ;
 
 #endif //_ZSTRING_H_

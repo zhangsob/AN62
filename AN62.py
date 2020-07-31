@@ -303,7 +303,7 @@ class AN62(object) :
 
 if __name__ == '__main__':
     src0 = 'http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可'
-    print('src0:' + src0)
+    print('src0['+str(len(src0))+']:' + src0)
     an62__tmp0 = AN62.encode(src0)
     print('an62__tmp0:' + an62__tmp0)
     an62__out0 = AN62.decode(an62__tmp0)
@@ -313,8 +313,9 @@ if __name__ == '__main__':
     base64_out = base64.b64decode(base64_tmp.encode('utf8')).decode('utf8')
     print('base64_out:' + base64_out)
 
+    # [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
     src1 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘" # ValueError가 발생하는 경우
-    print("src1:" + src1)
+    print("src1:["+str(len(src1))+"]" + src1)
     try :
         tmp1 = AN62.encode(src1)
         print("tmp1:" + tmp1)

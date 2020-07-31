@@ -20,7 +20,7 @@ import java.util.Base64;
  *        0xF0 ~ 0xFF을 escape하는 용도로 하여 Binary를 Text화 일반적인 encoding하는데 사용하였다.
  *        bin2txt()함수   
  *        
- * @author zhangsob
+ * @author zhangsob@gmail.com
  * 
  * @history 2020-07-03 encode(), decode() 만듦.
  * 			2020-07-14 bin2txt(), txt2bin() 만듦.
@@ -45,8 +45,9 @@ public class AN62 {
 			val = (utf8[i] & 0xFF) ;
 			if(val >= 0xF0)	{
 				for(int j = 0; j < text.length(); ++j)
-					if(text.codePointAt(j) > 0xFFFF)
+					if(text.codePointAt(j) > 0xFFFF) {
 						throw new UnsupportedEncodingException("Illegal base62 character index " + j + " " + text.substring(j, j+2)) ;
+					}
 			}
 
 			value = value * 0xF0 + val;
@@ -312,7 +313,7 @@ public class AN62 {
 	public static void main(String[] args) {
 		try {
 			String src0 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可" ;
-			System.out.println("src0:" + src0) ;
+			System.out.println("src0["+src0.length()+"]:" + src0) ;
 			String an62__tmp0 = AN62.encode(src0) ;
 			System.out.println("an62__tmp0:" + an62__tmp0) ;
 			String an62__out0 = AN62.decode(an62__tmp0) ;
@@ -322,8 +323,9 @@ public class AN62 {
 			String base64_out = new String(java.util.Base64.getDecoder().decode(base64_tmp), "utf8") ;
 			System.out.println("base64_out:" + base64_out) ;
 
+			// [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
 			String src1 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘" ;	// UnsupportedEncodingException이 발생하는 경우
-			System.out.println("src1:" + src1) ;
+			System.out.println("src1["+src1.length()+"]:" + src1) ;		// String.length()은 문자갯수가 아니라, UTF16의 길이다. 
 			try {
 				String tmp1 = AN62.encode(src1) ;
 				System.out.println("tmp1:" + tmp1) ;

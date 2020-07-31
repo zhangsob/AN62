@@ -338,7 +338,7 @@ namespace AN62
         static void Main(string[] args)
         {
             string src0 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可" ;
-            Console.WriteLine("src0:" + src0) ;
+            Console.WriteLine("src0[" + src0.Length + "]:" + src0) ;
             string an62__tmp0 = AN62.encode(src0) ;
             Console.WriteLine("an62__tmp0:" + an62__tmp0) ;
             string an62__out0 = AN62.decode(an62__tmp0) ;
@@ -348,8 +348,9 @@ namespace AN62
             string base64_out = Encoding.UTF8.GetString(Convert.FromBase64String(base64_tmp)) ;
             Console.WriteLine("base64_out:" + base64_out) ;
 
+            // [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
             string src1 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘" ;    // ArgumentException이 발생하는 경우
-            Console.WriteLine("src1:" + src1);
+            Console.WriteLine("src1["+src1.Length+"]:" + src1);
             try
             {
                 string tmp1 = AN62.encode(src1);
