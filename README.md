@@ -1,6 +1,6 @@
-# AN62(BASE62)
+# AN62(AlphaNumeric62)
 BASE64 Encode에는 +/= 기본형 또는 -_= URL형이 있다.  
-여기서, 항상 특수문자가 문제가 되어. 0&#126;9, A&#126;Z, a&#126;z만으로 이루어진 Base62 아니, AlphaNumeric62을 만들어 보았다.
+여기서, 항상 특수문자가 문제가 되어. 0&#126;9, A&#126;Z, a&#126;z만으로 이루어진 AlphaNumeric62을 만들어 보았다.
 
 ## 원리
 |        Unicode값       |                 UTF-8                   |       Byte단위 값의 범위        |  비고 |
@@ -8,18 +8,14 @@ BASE64 Encode에는 +/= 기본형 또는 -_= URL형이 있다.
 | 0x000000&#126;0x00007F | 0xxx xxxx                               | 0x00&#126;0x7F                 | ASCII |
 | 0x000080&#126;0x0007FF | 110x xxxx 10xx xxxx                     | 0xC0&#126;0xDF, 0x80&#126;0xBF | 유럽   |
 | 0x000800&#126;0x00FFFF | 1110 xxxx 10xx xxxx 10xx xxxx           | 0xE0&#126;0xEF, 0x80&#126;0xBF | 한글등 |
-| 0x010000&#126;0x10FFFF | 1111 0zzz 10zz xxxx 10xx xxxx 10xx xxxx | 0xF0&#126;0xF7, 0x80&#126;0xBF |       |
+| 0x010000&#126;0x10FFFF | 1111 0zzz 10zz xxxx 10xx xxxx 10xx xxxx | 0xF0&#126;0xF4, 0x80&#126;0xBF |       |
 
-여기서, 0x0000 ~ 0xFFFF까지 UCS2에 거의 세계의 주요 문자가 속한다.   
-(실제로, java나 C#에서 String.length(), String.Length은 문자의 수가 아닌 UTF-16의 길이이다.)  
+그래서, 0x00&#126;0x7F, 0x80&#126;0xBF, 0xC0&#126;0xDF, 0xE0&#126;0xEF, 0xF0&#126;0xF4 즉, 0x00&#126;0xF4(245가지).
 
-그래서, 0x00&#126;0x7F, 0x80&#126;0xBF, 0xC0&#126;0xDF, 0xE0&#126;0xEF 즉, 0x00&#126;0xEF(240가지)만 주로 사용된다.   
-240<sup>3</sup> &lt; 61<sup>4</sup> 이다. (즉, 240가지 3덩어리를 61가지 4덩어리로 표현가능하다.)  
+245<sup>3</sup> &lt; 62<sup>4</sup> (14,706,125 < 14,776,336) 이다. (즉, 245가지 3덩어리를 62가지 4덩어리로 표현가능하다.)  
 
-BASE64 Encode의 원리도  
-256<sup>3</sup> = 64<sup>4</sup> 즉, 2<sup>(8&#42;3)</sup> = 2<sup>(6&#42;4)</sup> 로 3Byte을 6bit씩 4덩어리로 표현한 것이다.  
-
-여기서, 62가지중 'z'를 escape(0xFX영역)하여 binary도 지원한다.  
+BASE64 Encode의 원리도
+256<sup>3</sup> = 64<sup>4</sup> 즉, 2<sup>(8&#42;3)</sup> = 2<sup>(6&#42;4)</sup> 로 3Byte을 6bit씩 4덩어리로 표현한 것이다.
 
 ## 장단점
 단점 : BASE64는 bit연산으로 구현하고, AN62는 산술연산으로 다소 속도는 느림  
@@ -33,6 +29,7 @@ BASE64 Encode의 원리도
 - c#
 - cpp
 - python
+- pascal(Delphi)
 
 ## 예
 - java
@@ -51,21 +48,15 @@ public static void main(String[] args) {
         System.out.println("base64_out:" + base64_out) ;
 
         // [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
-        String src1 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘" ;	// UnsupportedEncodingException이 발생하는 경우
-        System.out.println("src1["+src1.length()+"]:" + src1) ;		// String.length()은 문자갯수가 아니라, UTF16의 길이다. 
-        try {
-            String tmp1 = AN62.encode(src1) ;
-            System.out.println("tmp1:" + tmp1) ;
-            String out1 = AN62.decode(tmp1) ;
-            System.out.println("out1:" + out1) ;
-        } catch(UnsupportedEncodingException uee) {
-            System.err.println(uee) ;
+		String src1 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘" ;
+		System.out.println("src1["+src1.length()+"]:" + src1) ;		// String.length()은 문자갯수가 아니라, UTF16의 길이다. 
+		String tmp1 = AN62.encode(src1) ;
+		System.out.println("tmp1:" + tmp1) ;
+		String out1 = AN62.decode(tmp1) ;
+		System.out.println("out1:" + out1) ;
 
-            String tmp2 = AN62.bin2txt(src1.getBytes("utf8")) ;
-            System.out.println("tmp2:" + tmp2) ;
-            String out2 = new String(AN62.txt2bin(tmp2), "utf8") ;
-            System.out.println("out2:" + out2) ;
-        }
+        if(src1.equals(out1))	System.out.println("src1.equals(out1)") ;
+
     } catch(Exception e) {
         e.printStackTrace();
     }
@@ -75,7 +66,7 @@ public static void main(String[] args) {
 ```
 src0[43]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可
-an62__tmp0:QVOZSTTLC33NTIeJPEfTElRKEFxJOid7CixjSEKmOiZwFiOXWiaIco6jfdmdXfmjXfyWWfSTwG7Y
+an62__tmp0:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39
 an62__out0:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可
 base64_tmp:aHR0cDovL3Rlc3QuY29tOjgwODAvYW42Mi5kbz9uYW1lPeqwgOuCmOuLpCDjhLHjhLTigLsK5Y+v
@@ -83,10 +74,10 @@ base64_out:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可
 src1[45]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可🐘
-tmp2:QVOZSTTLC33NTIeJPEfTElRKEFxJOid7CixjSEKmOiZwFiOXWiaIco6jfdmdXfmjXfyWWfSTwG7YzIeAi2U
-java.io.UnsupportedEncodingException: Illegal base62 character index 43 🐘
-out2:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+tmp1:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39ybpT2S
+out1:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可🐘
+src1.equals(out1)
 ```
 
 ## 예
@@ -94,43 +85,33 @@ out2:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 ```c#
 static void Main(string[] args)
 {
-    string src0 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可" ;
-    Console.WriteLine("src0[" + src0.Length + "]:" + src0) ;
-    string an62__tmp0 = AN62.encode(src0) ;
-    Console.WriteLine("an62__tmp0:" + an62__tmp0) ;
-    string an62__out0 = AN62.decode(an62__tmp0) ;
-    Console.WriteLine("an62__out0:" + an62__out0) ;
-    string base64_tmp = Convert.ToBase64String(Encoding.UTF8.GetBytes(src0)) ;
-    Console.WriteLine("base64_tmp:" + base64_tmp) ;
-    string base64_out = Encoding.UTF8.GetString(Convert.FromBase64String(base64_tmp)) ;
-    Console.WriteLine("base64_out:" + base64_out) ;
+    string src0 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可";
+    Console.WriteLine("src0[" + src0.Length + "]:" + src0);
+    string an62__tmp0 = AN62.encode(src0);
+    Console.WriteLine("an62__tmp0:" + an62__tmp0);
+    string an62__out0 = AN62.decode(an62__tmp0);
+    Console.WriteLine("an62__out0:" + an62__out0);
+    string base64_tmp = Convert.ToBase64String(Encoding.UTF8.GetBytes(src0));
+    Console.WriteLine("base64_tmp:" + base64_tmp);
+    string base64_out = Encoding.UTF8.GetString(Convert.FromBase64String(base64_tmp));
+    Console.WriteLine("base64_out:" + base64_out);
 
     // [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
-    string src1 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘" ;    // ArgumentException이 발생하는 경우
-    Console.WriteLine("src1["+src1.Length+"]:" + src1);
-    try
-    {
-        string tmp1 = AN62.encode(src1);
-        Console.WriteLine("tmp1:" + tmp1);
-        string out1 = AN62.decode(tmp1);
-        Console.WriteLine("out1:" + out1);
-    }
-    catch (ArgumentException ae)
-    {
-        Console.Error.WriteLine(ae);
+    string src1 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘";
+    Console.WriteLine("src1[" + src1.Length + "]:" + src1);
+    string tmp1 = AN62.encode(src1);
+    Console.WriteLine("tmp1:" + tmp1);
+    string out1 = AN62.decode(tmp1);
+    Console.WriteLine("out1:" + out1);
 
-        string tmp2 = AN62.bin2txt(Encoding.UTF8.GetBytes(src1));
-        Console.WriteLine("tmp2:" + tmp2);
-        string out2 = Encoding.UTF8.GetString(AN62.txt2bin(tmp2));
-        Console.WriteLine("out2:" + out2);
-    }
+    if (src1.Equals(out1)) Console.WriteLine("src1.Equals(out1)");
 }
 ```
 -----------------------------------------------------------------------------------
 ```
 src0[43]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可
-an62__tmp0:QVOZSTTLC33NTIeJPEfTElRKEFxJOid7CixjSEKmOiZwFiOXWiaIco6jfdmdXfmjXfyWWfSTwG7Y
+an62__tmp0:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39
 an62__out0:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可
 base64_tmp:aHR0cDovL3Rlc3QuY29tOjgwODAvYW42Mi5kbz9uYW1lPeqwgOuCmOuLpCDjhLHjhLTigLsK5Y+v
@@ -138,12 +119,10 @@ base64_out:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可
 src1[45]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可??
-System.ArgumentException: Illegal base62 character index 43 ??
-   위치: AN62.AN62.encode(String text) 파일 D:\2019.MALL\00.scripters\AN62\AN62.cs:줄 54
-   위치: AN62.AN62.Main(String[] args) 파일 D:\2019.MALL\00.scripters\AN62\AN62.cs:줄 356
-tmp2:QVOZSTTLC33NTIeJPEfTElRKEFxJOid7CixjSEKmOiZwFiOXWiaIco6jfdmdXfmjXfyWWfSTwG7YzIeAi2U
-out2:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+tmp1:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39ybpT2S
+out1:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可??
+src1.Equals(out1)
 ```
 
 ## 예
@@ -164,22 +143,14 @@ try {
     print("out0:" + out0) ;
 
     // [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
-    var src1 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘" ;    // Exception이 발생하는 경우
+    var src1 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘" ;
     print('src1['+src1.length+']:' + src1) ;
-    try {
-        var tmp1 = AN62.encode(src1) ;
-        print("tmp1:" + tmp1) ;
-        var out1 = AN62.decode(tmp1) ;
-        print("out1:" + out1) ;
-    }
-    catch(e) {
-        console.error(e) ;
+    var tmp1 = AN62.encode(src1) ;
+    print("tmp1:" + tmp1) ;
+    var out1 = AN62.decode(tmp1) ;
+    print("out1:" + out1) ;
 
-        var tmp2 = AN62.bin2txt(AN62.toUTF8(src1)) ;
-        print("tmp2:" + tmp2) ;
-        var out2 = AN62.fromUTF8(AN62.txt2bin(tmp2)) ;
-        print("out2:" + out2) ;
-    }
+    if(src1 === out1)   print("src1 === out1") ;
 } catch(e) {
     print(e) ;
 }
@@ -188,14 +159,15 @@ try {
 ```
 src0[43]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可
-tmp0:QVOZSTTLC33NTIeJPEfTElRKEFxJOid7CixjSEKmOiZwFiOXWiaIco6jfdmdXfmjXfyWWfSTwG7Y
+tmp0:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39
 out0:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可
 src1[45]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可🐘
-tmp2:QVOZSTTLC33NTIeJPEfTElRKEFxJOid7CixjSEKmOiZwFiOXWiaIco6jfdmdXfmjXfyWWfSTwG7YzIeAi2U
-out2:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+tmp1:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39ybpT2S
+out1:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可🐘
+src1 === out1
 ```
 
 ## 예
@@ -214,24 +186,21 @@ if __name__ == '__main__':
     print('base64_out:' + base64_out)
 
     # [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
-    src1 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘" # ValueError가 발생하는 경우
+    src1 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘"
     print("src1:["+str(len(src1))+"]" + src1)
-    try :
-        tmp1 = AN62.encode(src1)
-        print("tmp1:" + tmp1)
-        out1 = AN62.decode(tmp1)
-        print("out1:" + out1)
-    except ValueError :
-        tmp2 = AN62.bin2txt(src1.encode("utf8"))
-        print("tmp2:" + tmp2)
-        out2 = AN62.txt2bin(tmp2).decode("utf8")
-        print("out2:" + out2)
+    tmp1 = AN62.encode(src1)
+    print("tmp1:" + tmp1)
+    out1 = AN62.decode(tmp1)
+    print("out1:" + out1)
+
+    if(src1 == out1) :
+        print("src1 == out1")
 ```
 -----------------------------------------------------------------------------------
 ```
 src0[43]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可
-an62__tmp0:QVOZSTTLC33NTIeJPEfTElRKEFxJOid7CixjSEKmOiZwFiOXWiaIco6jfdmdXfmjXfyWWfSTwG7Y
+an62__tmp0:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39
 an62__out0:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可
 base64_tmp:aHR0cDovL3Rlc3QuY29tOjgwODAvYW42Mi5kbz9uYW1lPeqwgOuCmOuLpCDjhLHjhLTigLsK5Y+v
@@ -239,98 +208,203 @@ base64_out:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可
 src1:[44]http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可🐘
-tmp2:QVOZSTTLC33NTIeJPEfTElRKEFxJOid7CixjSEKmOiZwFiOXWiaIco6jfdmdXfmjXfyWWfSTwG7YzIeAi2U
-out2:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+tmp1:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39ybpT2S
+out1:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可🐘
+src1 == out1
 ```
 
 ## 예
-- cpp
+- cpp (Windows)
 ```cpp
-// charset : UTF-8
+// charset : EUC-KR(on Windows)
 #include "an62.h"
 #include "zstring.h"
 #include <stdio.h>
 
 int main(int argc, char *argv[])
 {
-#if defined(_MSC_VER)
-    std::wstring src0 = L"http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可" ;
-    printf("src0[%zd]:%s\n", src0.length(), wstring2system(src0).c_str()) ;
-    std::string tmp0 = an62::encode(src0) ;
-#else
-    std::string src0 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可" ;
-    printf("src0[%zd]:%s\n", src0.length(), utf8_to_system(src0).c_str()) ;
-    std::string tmp0 = an62::encode(utf8_to_wstring(src0)) ;
-#endif
-    printf("tmp0:%s\n", tmp0.c_str()) ;
-    std::string out0 = wstring2system(an62::decode(tmp0)) ;
-    printf("out0:%s\n", out0.c_str()) ;
+	std::string locale(setlocale(LC_ALL, "")) ;
+	printf("locale : [%s]\n", locale.c_str()) ;
+	printf("sizeof(wchar_t) : %zd\n", sizeof(wchar_t)) ;
 
-    // [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
-#if defined(_MSC_VER)
-    std::wstring src1 = L"http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘" ;    // exception이 발생하는 경우
-    printf("src1[%zd]:%ls\n", src1.length(), src1.c_str()) ;
-    try {
-        std::string tmp1 = an62::encode(src1) ;
-#else
-    std::string src1 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘" ;    // exception이 발생하는 경우
-    printf("src1[%zd]:%s\n", src1.length(), utf8_to_system(src1).c_str()) ;
-    try {
-        std::string tmp1 = an62::encode(utf8_to_wstring(src1)) ;
-#endif
-        printf("tmp1:%s\n", tmp1.c_str()) ;
-        std::string out1 = wstring2system(an62::decode(tmp1)) ;
-        printf("out1:%s\n", out1.c_str()) ;
-    }
-    catch(const std::exception& e) {
-        fprintf(stderr, "%s\n", e.what()) ;
+	{
+		std::wstring src0 = L"http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可" ;
+		printf("src0[%zd]:%s\n", src0.length(), wstring2system(src0).c_str()) ;
+		std::string tmp0 = an62::encode(src0) ;
+		printf("tmp0:%s\n", tmp0.c_str()) ;
+		std::wstring out0 = an62::decode(tmp0) ;
+		printf("out0:%s\n", wstring2system(out0).c_str()) ;
+		printf("src0.compare(out0) : %d\n", src0.compare(out0)) ;
+	}
+	{
+		std::string src0 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可" ;
+		printf("src0[%zd]:%s\n", src0.length(), src0.c_str()) ;
+		std::string tmp0 = an62::encode(system2wstring(src0)) ;
+		printf("tmp0:%s\n", tmp0.c_str()) ;
+		std::string out0 = wstring2string(an62::decode(tmp0)) ;
+		printf("out0:%s\n", out0.c_str()) ;
+		printf("src0.compare(out0) : %d\n", src0.compare(out0)) ;
+	}
+    
+	{
+		// [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
+		std::wstring src1 = L"http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可" ;
+		if(sizeof(wchar_t) == 2) {	// Windows
+			src1.push_back(0xD83D) ;
+			src1.push_back(0xDC18) ;
+		}
+		else {	// Linux
+			src1.push_back(0x01F418) ;
+		}
+		printf("src1[%zd]:%s\n", src1.length(), wstring2system(src1).c_str()) ;
+		std::string tmp1 = an62::encode(src1) ;
+		printf("tmp1:%s\n", tmp1.c_str()) ;
+		std::wstring out1 = an62::decode(tmp1) ;
+		printf("out1:%s\n", wstring2system(out1).c_str()) ;
+		printf("src1.compare(out1) : %d\n", src1.compare(out1)) ;
+	}
 
-#if defined(_MSC_VER)
-        std::string src8 = wstring2utf8(src1) ;
-        std::vector<unsigned char> bin(src8.cbegin(), src8.cend()) ;    // UTF-8
-#else
-        std::vector<unsigned char> bin(src1.cbegin(), src1.cend()) ;    // UTF-8
-#endif
-        std::string tmp2 = an62::bin2txt(bin) ;
-        printf("tmp2:%s\n", tmp2.c_str()) ;
-        std::vector<unsigned char> bin2 = an62::txt2bin(tmp2) ;
-        std::string utf8(bin2.cbegin(), bin2.cend()) ;
-        std::string out2 = utf8_to_system(utf8) ;
-        printf("out2:%s\n", out2.c_str()) ;
-    }
+	{
+		// [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
+		std::string utf8 = system2utf8("http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可") ;
+		utf8.push_back(0xF0) ;
+		utf8.push_back(0x9F) ;
+		utf8.push_back(0x90) ;
+		utf8.push_back(0x98) ;
+		std::string tmp1 = an62::encode(utf8_to_wstring(utf8)) ;
+		printf("utf8[%zd]:%s\n", utf8.length(), utf8_to_system(utf8).c_str()) ;
+		printf("tmp1:%s\n", tmp1.c_str()) ;
+		std::string out8 = wstring2utf8(an62::decode(tmp1)) ;
+		printf("out8[%zd]:%s\n", out8.length(), utf8_to_system(out8).c_str()) ;
+		printf("utf8.compare(out8) : %d\n", utf8.compare(out8)) ;
+	}
 
-    return 0 ;
+	return 0 ;
 }
 ```
-windows
 -----------------------------------------------------------------------------------
 ```
+locale : [Korean_Korea.949]
+sizeof(wchar_t) : 2
 src0[43]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可
-tmp0:QVOZSTTLC33NTIeJPEfTElRKEFxJOid7CixjSEKmOiZwFiOXWiaIco6jfdmdXfmjXfyWWfSTwG7Y
+tmp0:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39
 out0:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可
+src0.compare(out0) : 0
+src0[50]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可
+tmp0:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39
+out0:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可
+src0.compare(out0) : 0
 src1[45]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
-可Illegal base62 character
-tmp2:QVOZSTTLC33NTIeJPEfTElRKEFxJOid7CixjSEKmOiZwFiOXWiaIco6jfdmdXfmjXfyWWfSTwG7YzIeAi2U
-out2:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可??
+tmp1:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39ybpT2S
+out1:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可??
+src1.compare(out1) : 0
+utf8[61]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可??
+tmp1:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39ybpT2S
+out8[61]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可??
+utf8.compare(out8) : 0
 ```
-linux
+## 예
+- cpp (Linux)
+```cpp
+// charset : UTF-8(on Linux)
+#include "an62.h"
+#include "zstring.h"
+#include <stdio.h>
+
+int main(int argc, char *argv[])
+{
+	std::string locale(setlocale(LC_ALL, "")) ;
+	printf("locale : [%s]\n", locale.c_str()) ;
+	printf("sizeof(wchar_t) : %zd\n", sizeof(wchar_t)) ;
+	
+	{
+		std::wstring src0 = L"http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可" ;
+		printf("src0[%zd]:%s\n", src0.length(), wstring2system(src0).c_str()) ;
+		std::string tmp0 = an62::encode(src0) ;
+		printf("tmp0:%s\n", tmp0.c_str()) ;
+		std::wstring out0 = an62::decode(tmp0) ;
+		printf("out0:%s\n", wstring2system(out0).c_str()) ;
+		printf("src0.compare(out0) : %d\n", src0.compare(out0)) ;
+	}
+	{
+		std::string src0 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可" ;
+		printf("src0[%zd]:%s\n", src0.length(), src0.c_str()) ;
+		std::string tmp0 = an62::encode(system2wstring(src0)) ;
+		printf("tmp0:%s\n", tmp0.c_str()) ;
+		std::string out0 = wstring2system(an62::decode(tmp0)) ;
+		printf("out0:%s\n", out0.c_str()) ;
+		printf("src0.compare(out0) : %d\n", src0.compare(out0)) ;
+	}
+    
+	{
+		// [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
+		std::wstring src1 = L"http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可" ;
+		if(sizeof(wchar_t) == 2) {	// Windows
+			src1.push_back(0xD83D) ;
+			src1.push_back(0xDC18) ;
+		}
+		else {	// Linux
+			src1.push_back(0x01F418) ;
+		}
+		printf("src1[%zd]:%s\n", src1.length(), wstring2system(src1).c_str()) ;
+		std::string tmp1 = an62::encode(src1) ;
+		printf("tmp1:%s\n", tmp1.c_str()) ;
+		std::wstring out1 = an62::decode(tmp1) ;
+		printf("out1:%s\n", wstring2system(out1).c_str()) ;
+		printf("src1.compare(out1) : %d\n", src1.compare(out1)) ;
+	}
+
+	{
+		// [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
+		std::string utf8 = system2utf8("http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘") ;
+		std::string tmp1 = an62::encode(utf8_to_wstring(utf8)) ;
+		printf("utf8[%zd]:%s\n", utf8.length(), utf8_to_system(utf8).c_str()) ;
+		printf("tmp1:%s\n", tmp1.c_str()) ;
+		std::string out8 = wstring2utf8(an62::decode(tmp1)) ;
+		printf("out8[%zd]:%s\n", out8.length(), utf8_to_system(out8).c_str()) ;
+		printf("utf8.compare(out8) : %d\n", utf8.compare(out8)) ;
+	}
+
+	return 0 ;
+}
+```
 -----------------------------------------------------------------------------------
 ```
-src0[57]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+locale : [ko_KR.UTF-8]
+sizeof(wchar_t) : 4
+src0[43]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可
-tmp0:QVOZSTTLC33NTIeJPEfTElRKEFxJOid7CixjSEKmOiZwFiOXWiaIco6jfdmdXfmjXfyWWfSTwG7Y
+tmp0:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39
 out0:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可
-src1[61]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+src0.compare(out0) : 0
+src0[57]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可
+tmp0:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39
+out0:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可
+src0.compare(out0) : 0
+src1[44]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可🐘
-Illegal base62 character
-tmp2:QVOZSTTLC33NTIeJPEfTElRKEFxJOid7CixjSEKmOiZwFiOXWiaIco6jfdmdXfmjXfyWWfSTwG7YzIeAi2U
-out2:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+tmp1:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39ybpT2S
+out1:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可🐘
+src1.compare(out1) : 0
+utf8[61]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可🐘
+tmp1:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39ybpT2S
+out8[61]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可🐘
+utf8.compare(out8) : 0
 ```
 
 ## 예
@@ -347,26 +421,90 @@ uses
   ZString in 'ZString.pas';
 
 var
+  wsrc, wout : WideString ;
+  wtmp : string ;
   src0, tmp0, out0 : String ;
-
+  utf8, tmp8, out8 : String ;
 begin
+  Writeln('----------EUC-KR------------') ;
   src0 := 'http://test.com:8080/an62.do?name=가나다 ㄱㄴ※'#10'可' ;
-  Writeln('src0[' + IntToStr(Length(src0)) + ']:' + TZString.SafeUTF8Decode(src0)) ;
+  Writeln('src0[' + IntToStr(Length(src0)) + ']:' + src0) ;
   tmp0 := TAN62.Encode(src0) ;
   Writeln('tmp0:' + tmp0) ;
   out0 := TAN62.Decode(tmp0) ;
-  Writeln('out0:' + TZString.SafeUTF8Decode(out0)) ;
-  
+  Writeln('out0[' + IntToStr(Length(out0)) + ']:' + out0) ;
+  if (src0 = out0) then WriteLn('src0 = out0') ;
+
+  Writeln('----------UTF-8----------') ;
+  utf8 := UTF8Encode('http://test.com:8080/an62.do?name=가나다 ㄱㄴ※'#10'可') ;
+  Writeln('utf8[' + IntToStr(Length(utf8)) + ']:' + UTF8Decode(utf8)) ;
+  tmp8 := TAN62.Encode(utf8) ;
+  Writeln('tmp8:' + tmp8) ;
+  out8 := UTF8Encode(TAN62.Decode(tmp8)) ;
+  Writeln('out8[' + IntToStr(Length(out8)) + ']:' + UTF8Decode(out8)) ;
+  if (utf8 = out8) then WriteLn('utf8 = out8') ;
+
+  Writeln('----------WideString------------') ;
+  // [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
+  wsrc := 'http://test.com:8080/an62.do?name=가나다 ㄱㄴ※'#10'可' ;
+  wsrc := wsrc + #55357 ; // 0xD83D #55357
+  wsrc := wsrc + #56344 ; // 0xDC18 #56344
+  Writeln('wsrc[' + IntToStr(Length(wsrc)) + ']:' + wsrc) ;
+  wtmp := TAN62.Encode(wsrc) ;
+  Writeln('wtmp:' + wtmp) ;
+  wout := TAN62.Decode(wtmp) ;
+  Writeln('wout[' + IntToStr(Length(wout)) + ']:' + wout) ;
+  if (wsrc = wout) then WriteLn('wsrc = wout') ;
+
+  Writeln('----------UTF-8----------') ;
+  // [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
+  utf8 := UTF8Encode('http://test.com:8080/an62.do?name=가나다 ㄱㄴ※'#10'可') ;
+  utf8 := utf8 + #240 ; // 0xF0 #240
+  utf8 := utf8 + #159 ; // 0x9F #159
+  utf8 := utf8 + #144 ; // 0x90 #144
+  utf8 := utf8 + #152 ; // 0x98 #152
+  //Writeln('utf8[' + IntToStr(Length(utf8)) + ']:' + UTF8Decode(utf8)) ; // 코끼리 때문에 안됨.
+  Writeln('utf8[' + IntToStr(Length(utf8)) + ']:' + TZString.WideStringToString(TZString.StringToWideString(utf8, 65001))) ;
+  tmp8 := TAN62.Encode(utf8) ;
+  Writeln('tmp8:' + tmp8) ;
+  out8 := TZString.WideStringToString(TAN62.Decode(tmp8), 65001) ;
+  //Writeln('utf8[' + IntToStr(Length(out8)) + ']:' + UTF8Decode(out8)) ; // 코끼리 때문에 안됨.
+  Writeln('utf8[' + IntToStr(Length(out8)) + ']:' + TZString.WideStringToString(TZString.StringToWideString(out8, 65001))) ;
+  if (utf8 = out8) then WriteLn('utf8 = out8') ;
+
   ReadLn;
 end.
 ```
 -----------------------------------------------------------------------------------
 ```
+----------EUC-KR------------
 src0[50]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可
-tmp0:QVOZSTTLC33NTIeJPEfTElRKEFxJOid7CixjSEKmOiZwFiOXWiaIco6jfdmdXfmjXfyWWfSTwG7Y
-out0:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+tmp0:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39
+out0[50]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可
+src0 = out0
+----------UTF-8----------
+utf8[57]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可
+tmp8:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39
+out8[57]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可
+utf8 = out8
+----------WideString------------
+wsrc[45]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可??
+wtmp:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39ybpT2S
+wout[45]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可??
+wsrc = wout
+----------UTF-8----------
+utf8[61]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可??
+tmp8:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39ybpT2S
+utf8[61]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可??
+utf8 = out8
 ```
 ## 예
 - pas (Free Pascal)
@@ -377,54 +515,80 @@ program AN62Test;
 {$APPTYPE CONSOLE}
 
 uses
-  SysUtils, AN62, ZString, Base62;
+  SysUtils, AN62, ZString;
 
 var
+  wsrc, wout : WideString ;
+  wtmp : string ;
   src0, tmp0, out0 : String ;
   src1, tmp1, out1 : String ;
-  tmp2, out2 : String ;
 
 begin
+  WriteLn('----------UTF-8----------') ;
   src0 := 'http://test.com:8080/an62.do?name=가나다 ㄱㄴ※'#10'可' ;
-  Writeln('src0[' + IntToStr(Length(src0)) + ']:' + TZString.SafeUTF8Decode(src0)) ;
+  WriteLn(UTF8Decode('src0[' + IntToStr(Length(src0)) + ']:') + UTF8Decode(src0)) ;
   tmp0 := TAN62.Encode(src0) ;
-  Writeln('tmp0:' + tmp0) ;
-  out0 := TAN62.Decode(tmp0) ;
-  Writeln('out0:' + TZString.SafeUTF8Decode(out0)) ;
+  WriteLn('tmp0:' + tmp0) ;
+  out0 := UTF8Encode(TAN62.Decode(tmp0)) ;
+  WriteLn(UTF8Decode('out0[' + IntToStr(Length(out0)) + ']:') + UTF8Decode(out0)) ;
+  if (src0 = out0) then WriteLn('src0 = out0') ;
+  if (UTF8Decode(src0) = UTF8Decode(out0)) then WriteLn('UTF8Decode(src0) = UTF8Decode(out0)') ;
 
+  Writeln('----------WideString------------') ;
   // [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
-  src1 := 'http://test.com:8080/an62.do?name=가나다 ㄱㄴ※'#10'可🐘' ;    // Exception이 발생하는 경우
-  Writeln('src1[' + IntToStr(Length(src1)) + ']:' + TZString.SafeUTF8Decode(src1)) ;
-  try
-    tmp1 := TAN62.Encode(src1) ;
-    Writeln('tmp1:' + tmp1) ;
-    out1 := TAN62.Decode(tmp1) ;
-    Writeln('out1:' + TZString.SafeUTF8Decode(out1)) ;
-  except
-    on e: Exception do
-    begin
-      WriteLn('Exception : ' + e.Message) ;
-      tmp2 := TBase62.Encode(TZString.StringToBytes(TZString.SafeUTF8Encode(src1))) ;
-      WriteLn('tmp2:' + tmp2) ;
-      out2 := TZString.SafeUTF8Decode(TZString.BytesToString(TBase62.Decode(tmp2))) ;
-      Writeln('out2:' + out2) ;
-    end;
-  end;
+  wsrc := TZString.StringToWideString('http://test.com:8080/an62.do?name=가나다 ㄱㄴ※'#10'可🐘' , 65001);
+  WriteLn(UTF8Decode('wsrc[' + IntToStr(Length(wsrc)) + ']:') + wsrc) ;
+  wtmp := TAN62.Encode(wsrc) ;
+  WriteLn('wtmp:' + wtmp) ;
+  wout := TAN62.Decode(wtmp) ;
+  WriteLn(UTF8Decode('wout[' + IntToStr(Length(wout)) + ']:') + wout) ;
+  if (wsrc = wout) then WriteLn('wsrc = wout') ;
+
+  Writeln('----------UTF-8----------') ;
+  // [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
+  src1 := 'http://test.com:8080/an62.do?name=가나다 ㄱㄴ※'#10'可🐘' ;
+  WriteLn(UTF8Decode('src1[' + IntToStr(Length(src1)) + ']:') + UTF8Decode(src1)) ;
+  WriteLn(TZString.ToHexa(src1)) ;
+  tmp1 := TAN62.Encode(src1) ;
+  WriteLn('tmp1:' + tmp1) ;
+  out1 := UTF8Encode(TAN62.Decode(tmp1)) ;
+  WriteLn(UTF8Decode('out1[' + IntToStr(Length(out1)) + ']:') + UTF8Decode(out1)) ;
+  WriteLn(TZString.ToHexa(out1)) ;
+  if (src1 = out1) then WriteLn('src1 = out1') ;
+  if (UTF8Decode(src1) = UTF8Decode(out1)) then WriteLn('UTF8Decode(src1) = UTF8Decode(out1)') ;
 
   ReadLn ;
 end.
 ```
 -----------------------------------------------------------------------------------
 ```
+----------UTF-8----------
 src0[57]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可
-tmp0:QVOZSTTLC33NTIeJPEfTElRKEFxJOid7CixjSEKmOiZwFiOXWiaIco6jfdmdXfmjXfyWWfSTwG7Y
-out0:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+tmp0:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39
+out0[57]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可
+UTF8Decode(src0) = UTF8Decode(out0)
+----------WideString------------
+wsrc[45]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可??
+wtmp:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39ybpT2S
+wout[45]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可??
+wsrc = wout
+----------UTF-8----------
 src1[61]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可??
-Exception : invalid UCS2 Character
-tmp2:QVOZSTTLC33NTIeJPEfTElRKEFxJOid7CixjSEKmOiZwFiOXWiaIco6jfdmdXfmjXfyWWfSTwG7YzIeAi2U
-out2:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+68 74 74 70 3A 2F 2F 74  65 73 74 2E 63 6F 6D 3A
+38 30 38 30 2F 61 6E 36  32 2E 64 6F 3F 6E 61 6D
+65 3D EA B0 80 EB 82 98  EB 8B A4 20 E3 84 B1 E3
+84 B4 E2 80 BB 0A E5 8F  AF F0 9F 90 98
+tmp1:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39ybpT2S
+out1[61]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可??
+68 74 74 70 3A 2F 2F 74  65 73 74 2E 63 6F 6D 3A
+38 30 38 30 2F 61 6E 36  32 2E 64 6F 3F 6E 61 6D
+65 3D EA B0 80 EB 82 98  EB 8B A4 20 E3 84 B1 E3
+84 B4 E2 80 BB 0A E5 8F  AF F0 9F 90 98
+UTF8Decode(src1) = UTF8Decode(out1)
 ```
