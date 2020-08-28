@@ -408,8 +408,8 @@ utf8.compare(out8) : 0
 ```
 
 ## 예
-- pas (Dephi)
-```pas
+- pascal (Dephi)
+```pascal
 { charset : EUC-KR }
 program AN62Test;
 
@@ -422,55 +422,68 @@ uses
 
 var
   wsrc, wout : WideString ;
-  wtmp : string ;
-  src0, tmp0, out0 : String ;
-  utf8, tmp8, out8 : String ;
+  wtmp, tmp0, tmp8 : string ;
+  src0, out0 : AnsiString ;
+  utf8, out8 : UTF8String ;
 begin
-  Writeln('----------EUC-KR------------') ;
+  WriteLn('----------AnsiString------------') ;
   src0 := 'http://test.com:8080/an62.do?name=가나다 ㄱㄴ※'#10'可' ;
-  Writeln('src0[' + IntToStr(Length(src0)) + ']:' + src0) ;
-  tmp0 := TAN62.Encode(src0) ;
-  Writeln('tmp0:' + tmp0) ;
-  out0 := TAN62.Decode(tmp0) ;
-  Writeln('out0[' + IntToStr(Length(out0)) + ']:' + out0) ;
-  if (src0 = out0) then WriteLn('src0 = out0') ;
+  WriteLn('src0[', Length(src0), ']:', src0) ;
 
-  Writeln('----------UTF-8----------') ;
-  utf8 := UTF8Encode('http://test.com:8080/an62.do?name=가나다 ㄱㄴ※'#10'可') ;
-  Writeln('utf8[' + IntToStr(Length(utf8)) + ']:' + UTF8Decode(utf8)) ;
+  tmp0 := TAN62.Encode(AnsiToUtf8(src0)) ;
+  WriteLn('tmp0[', Length(tmp0), ']:', tmp0) ;
+
+  out0 := Utf8ToAnsi(TAN62.Decode(tmp0)) ;
+  WriteLn('out0[', Length(out0), ']:', out0) ;
+
+  WriteLn('src0 = out0 : ', (src0 = out0)) ;
+
+  WriteLn('----------UTF8String----------') ;
+  utf8 := AnsiToUtf8('http://test.com:8080/an62.do?name=가나다 ㄱㄴ※'#10'可') ;
+  WriteLn('utf8[', Length(utf8), ']:', Utf8ToAnsi(utf8)) ;
+
   tmp8 := TAN62.Encode(utf8) ;
-  Writeln('tmp8:' + tmp8) ;
-  out8 := UTF8Encode(TAN62.Decode(tmp8)) ;
-  Writeln('out8[' + IntToStr(Length(out8)) + ']:' + UTF8Decode(out8)) ;
-  if (utf8 = out8) then WriteLn('utf8 = out8') ;
+  WriteLn('tmp8[', Length(tmp8), ']:', tmp8) ;
 
-  Writeln('----------WideString------------') ;
+  out8 := TAN62.Decode(tmp8) ;
+  WriteLn('out8[', Length(out8), ']:', Utf8ToAnsi(out8)) ;
+
+  WriteLn('utf8 = out8 : ', (utf8 = out8)) ;
+
+  WriteLn('----------WideString------------') ;
   // [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
   wsrc := 'http://test.com:8080/an62.do?name=가나다 ㄱㄴ※'#10'可' ;
   wsrc := wsrc + #55357 ; // 0xD83D #55357
   wsrc := wsrc + #56344 ; // 0xDC18 #56344
-  Writeln('wsrc[' + IntToStr(Length(wsrc)) + ']:' + wsrc) ;
-  wtmp := TAN62.Encode(wsrc) ;
-  Writeln('wtmp:' + wtmp) ;
-  wout := TAN62.Decode(wtmp) ;
-  Writeln('wout[' + IntToStr(Length(wout)) + ']:' + wout) ;
-  if (wsrc = wout) then WriteLn('wsrc = wout') ;
+  WriteLn('wsrc[', Length(wsrc), ']:', wsrc) ;
 
-  Writeln('----------UTF-8----------') ;
+  wtmp := TAN62.Encode(wsrc) ;
+  WriteLn('wtmp[', Length(wtmp), ']:', wtmp) ;
+
+  //wout := UTF8Decode(TAN62.Decode(wtmp)) ;  // 코끼리 때문에 안됨.
+  wout := TZString.SafeUTF8Decode(TAN62.Decode(wtmp)) ;
+  WriteLn('wout[', Length(wout), ']:', wout) ;
+
+  WriteLn('wsrc = wout : ', (wsrc = wout)) ;
+
+  WriteLn('----------UTF8String----------') ;
   // [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
   utf8 := UTF8Encode('http://test.com:8080/an62.do?name=가나다 ㄱㄴ※'#10'可') ;
   utf8 := utf8 + #240 ; // 0xF0 #240
   utf8 := utf8 + #159 ; // 0x9F #159
   utf8 := utf8 + #144 ; // 0x90 #144
   utf8 := utf8 + #152 ; // 0x98 #152
-  //Writeln('utf8[' + IntToStr(Length(utf8)) + ']:' + UTF8Decode(utf8)) ; // 코끼리 때문에 안됨.
-  Writeln('utf8[' + IntToStr(Length(utf8)) + ']:' + TZString.WideStringToString(TZString.StringToWideString(utf8, 65001))) ;
+  //WriteLn('utf8[', Length(utf8), ']:', UTF8Decode(utf8)) ; // 코끼리 때문에 안됨.
+  WriteLn('utf8[', Length(utf8), ']:', TZString.SafeUTF8Decode(utf8)) ;
+
   tmp8 := TAN62.Encode(utf8) ;
-  Writeln('tmp8:' + tmp8) ;
-  out8 := TZString.WideStringToString(TAN62.Decode(tmp8), 65001) ;
-  //Writeln('utf8[' + IntToStr(Length(out8)) + ']:' + UTF8Decode(out8)) ; // 코끼리 때문에 안됨.
-  Writeln('utf8[' + IntToStr(Length(out8)) + ']:' + TZString.WideStringToString(TZString.StringToWideString(out8, 65001))) ;
-  if (utf8 = out8) then WriteLn('utf8 = out8') ;
+  WriteLn('tmp8[', Length(tmp8), ']:', tmp8) ;
+
+  out8 := TAN62.Decode(tmp8) ;
+  //WriteLn('utf8[', Length(out8)), ']:', UTF8Decode(out8)) ; // 코끼리 때문에 안됨.
+  WriteLn('utf8[', Length(out8), ']:', TZString.SafeUTF8Decode(out8)) ;
+
+  WriteLn('utf8 = out8 : ', (utf8 = out8)) ;
 
   ReadLn;
 end.
@@ -498,7 +511,7 @@ wtmp:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp3
 wout[45]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可??
 wsrc = wout
-----------UTF-8----------
+----------UTF8String----------
 utf8[61]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可??
 tmp8:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39ybpT2S
@@ -519,76 +532,111 @@ uses
 
 var
   wsrc, wout : WideString ;
-  wtmp : string ;
-  src0, tmp0, out0 : String ;
-  src1, tmp1, out1 : String ;
+  wtmp, tmp8, tmp0 : string ;
+  src0, out0 : AnsiString ;
+  utf8, out8 : UTF8String ;
 
 begin
-  WriteLn('----------UTF-8----------') ;
-  src0 := 'http://test.com:8080/an62.do?name=가나다 ㄱㄴ※'#10'可' ;
-  WriteLn(UTF8Decode('src0[' + IntToStr(Length(src0)) + ']:') + UTF8Decode(src0)) ;
-  tmp0 := TAN62.Encode(src0) ;
-  WriteLn('tmp0:' + tmp0) ;
-  out0 := UTF8Encode(TAN62.Decode(tmp0)) ;
-  WriteLn(UTF8Decode('out0[' + IntToStr(Length(out0)) + ']:') + UTF8Decode(out0)) ;
-  if (src0 = out0) then WriteLn('src0 = out0') ;
-  if (UTF8Decode(src0) = UTF8Decode(out0)) then WriteLn('UTF8Decode(src0) = UTF8Decode(out0)') ;
+  WriteLn('----------UTF8String----------') ;
+  utf8 := AnsiToUtf8(UTf8ToAnsi('http://test.com:8080/an62.do?name=가나다 ㄱㄴ※'#10'可')) ;
+  WriteLn('utf8[', Length(utf8), ']:', Utf8ToAnsi(utf8)) ;
 
-  Writeln('----------WideString------------') ;
-  // [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
-  wsrc := TZString.StringToWideString('http://test.com:8080/an62.do?name=가나다 ㄱㄴ※'#10'可🐘' , 65001);
-  WriteLn(UTF8Decode('wsrc[' + IntToStr(Length(wsrc)) + ']:') + wsrc) ;
+  tmp8 := TAN62.Encode(utf8) ;
+  WriteLn('tmp8[', Length(tmp8), ']:', tmp8) ;
+
+  out8 := TAN62.Decode(tmp8) ;
+  WriteLn('out8[', Length(out8), ']:', Utf8ToAnsi(out8)) ;
+
+  WriteLn('utf8 = out8 : ', (utf8 = out8)) ;
+
+  WriteLn('----------AnsiString------------') ;
+  src0 := Utf8ToAnsi('http://test.com:8080/an62.do?name=가나다 ㄱㄴ※'#10'可') ;
+  WriteLn('src0[', Length(src0), ']:', src0) ;
+
+  tmp0 := TAN62.Encode(AnsiToUtf8(src0)) ;
+  WriteLn('tmp0[', Length(tmp0), ']:', tmp0) ;
+
+  out0 := Utf8ToAnsi(TAN62.Decode(tmp0)) ;
+  WriteLn('out0[', Length(out0), ']:', out0) ;
+
+  WriteLn('src0 = out0 : ', (src0 = out0)) ;
+
+  WriteLn('----------WideString----------') ;
+  wsrc := UTF8Decode('http://test.com:8080/an62.do?name=가나다 ㄱㄴ※'#10'可') ;
+  WriteLn('wsrc[', Length(wsrc), ']:', wsrc) ;
+
   wtmp := TAN62.Encode(wsrc) ;
-  WriteLn('wtmp:' + wtmp) ;
-  wout := TAN62.Decode(wtmp) ;
-  WriteLn(UTF8Decode('wout[' + IntToStr(Length(wout)) + ']:') + wout) ;
-  if (wsrc = wout) then WriteLn('wsrc = wout') ;
+  WriteLn('wtmp[', Length(wtmp), ']:', wtmp) ;
 
-  Writeln('----------UTF-8----------') ;
+  wout := UTF8Decode(TAN62.Decode(wtmp)) ;
+  WriteLn('wout[', Length(wout), ']:', wout) ;
+
+  WriteLn('wsrc = wout : ', (wsrc = wout)) ;
+
+  Writeln('----------UTF8String----------') ;
   // [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
-  src1 := 'http://test.com:8080/an62.do?name=가나다 ㄱㄴ※'#10'可🐘' ;
-  WriteLn(UTF8Decode('src1[' + IntToStr(Length(src1)) + ']:') + UTF8Decode(src1)) ;
-  WriteLn(TZString.ToHexa(src1)) ;
-  tmp1 := TAN62.Encode(src1) ;
-  WriteLn('tmp1:' + tmp1) ;
-  out1 := UTF8Encode(TAN62.Decode(tmp1)) ;
-  WriteLn(UTF8Decode('out1[' + IntToStr(Length(out1)) + ']:') + UTF8Decode(out1)) ;
-  WriteLn(TZString.ToHexa(out1)) ;
-  if (src1 = out1) then WriteLn('src1 = out1') ;
-  if (UTF8Decode(src1) = UTF8Decode(out1)) then WriteLn('UTF8Decode(src1) = UTF8Decode(out1)') ;
+  utf8 := UTF8Encode(UTF8Decode('http://test.com:8080/an62.do?name=가나다 ㄱㄴ※'#10'可🐘')) ;
+  WriteLn('utf8[', Length(utf8), ']:', UTF8Decode(utf8)) ;
+
+  tmp8 := TAN62.Encode(utf8) ;
+  WriteLn('tmp8[', Length(tmp8), ']:', tmp8) ;
+
+  out8 := TAN62.Decode(tmp8) ;
+  WriteLn('out8[', Length(out8), ']:', UTF8Decode(out8)) ;
+
+  WriteLn('utf8 = out8 : ', (utf8 = out8)) ;
+
+  WriteLn('----------WideString------------') ;
+  // [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
+  wsrc := UTF8Decode('http://test.com:8080/an62.do?name=가나다 ㄱㄴ※'#10'可🐘') ;
+  WriteLn('wsrc[', Length(wsrc), ']:', wsrc) ;
+
+  wtmp := TAN62.Encode(wsrc) ;
+  WriteLn('wtmp[', Length(wtmp), ']:', wtmp) ;
+
+  wout := UTF8Decode(TAN62.Decode(wtmp)) ;
+  WriteLn('wout[', Length(wout), ']:', wout) ;
+
+  WriteLn('wsrc = wout : ', (wsrc = wout)) ;
 
   ReadLn ;
 end.
 ```
 -----------------------------------------------------------------------------------
 ```
-----------UTF-8----------
-src0[57]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+----------UTF8String----------
+utf8[57]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可
-tmp0:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39
-out0[57]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+tmp8[76]:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39
+out8[57]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可
-UTF8Decode(src0) = UTF8Decode(out0)
+utf8 = out8 : TRUE
+----------AnsiString------------
+src0[50]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可
+tmp0[76]:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39
+out0[50]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可
+src0 = out0 : TRUE
+----------WideString----------
+wsrc[43]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可
+wtmp[76]:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39
+wout[43]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可
+wsrc = wout : TRUE
+----------UTF8String----------
+utf8[61]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可??
+tmp8[82]:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39ybpT2S
+out8[61]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可??
+utf8 = out8 : TRUE
 ----------WideString------------
 wsrc[45]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可??
-wtmp:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39ybpT2S
+wtmp[82]:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39ybpT2S
 wout[45]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可??
-wsrc = wout
-----------UTF-8----------
-src1[61]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
-可??
-68 74 74 70 3A 2F 2F 74  65 73 74 2E 63 6F 6D 3A
-38 30 38 30 2F 61 6E 36  32 2E 64 6F 3F 6E 61 6D
-65 3D EA B0 80 EB 82 98  EB 8B A4 20 E3 84 B1 E3
-84 B4 E2 80 BB 0A E5 8F  AF F0 9F 90 98
-tmp1:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39ybpT2S
-out1[61]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
-可??
-68 74 74 70 3A 2F 2F 74  65 73 74 2E 63 6F 6D 3A
-38 30 38 30 2F 61 6E 36  32 2E 64 6F 3F 6E 61 6D
-65 3D EA B0 80 EB 82 98  EB 8B A4 20 E3 84 B1 E3
-84 B4 E2 80 BB 0A E5 8F  AF F0 9F 90 98
-UTF8Decode(src1) = UTF8Decode(out1)
+wsrc = wout : TRUE
 ```

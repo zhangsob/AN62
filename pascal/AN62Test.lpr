@@ -8,43 +8,72 @@ uses
 
 var
   wsrc, wout : WideString ;
-  wtmp : string ;
-  src0, tmp0, out0 : String ;
-  src1, tmp1, out1 : String ;
+  wtmp, tmp8, tmp0 : string ;
+  src0, out0 : AnsiString ;
+  utf8, out8 : UTF8String ;
 
 begin
-  WriteLn('----------UTF-8----------') ;
-  src0 := 'http://test.com:8080/an62.do?name=가나다 ㄱㄴ※'#10'可' ;
-  WriteLn(UTF8Decode('src0[' + IntToStr(Length(src0)) + ']:') + UTF8Decode(src0)) ;
-  tmp0 := TAN62.Encode(src0) ;
-  WriteLn('tmp0:' + tmp0) ;
-  out0 := UTF8Encode(TAN62.Decode(tmp0)) ;
-  WriteLn(UTF8Decode('out0[' + IntToStr(Length(out0)) + ']:') + UTF8Decode(out0)) ;
-  if (src0 = out0) then WriteLn('src0 = out0') ;
-  if (UTF8Decode(src0) = UTF8Decode(out0)) then WriteLn('UTF8Decode(src0) = UTF8Decode(out0)') ;
+  WriteLn('----------UTF8String----------') ;
+  utf8 := AnsiToUtf8(UTf8ToAnsi('http://test.com:8080/an62.do?name=가나다 ㄱㄴ※'#10'可')) ;
+  WriteLn('utf8[', Length(utf8), ']:', Utf8ToAnsi(utf8)) ;
 
-  Writeln('----------WideString------------') ;
-  // [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
-  wsrc := TZString.StringToWideString('http://test.com:8080/an62.do?name=가나다 ㄱㄴ※'#10'可🐘' , 65001);
-  WriteLn(UTF8Decode('wsrc[' + IntToStr(Length(wsrc)) + ']:') + wsrc) ;
+  tmp8 := TAN62.Encode(utf8) ;
+  WriteLn('tmp8[', Length(tmp8), ']:', tmp8) ;
+
+  out8 := TAN62.Decode(tmp8) ;
+  WriteLn('out8[', Length(out8), ']:', Utf8ToAnsi(out8)) ;
+
+  WriteLn('utf8 = out8 : ', (utf8 = out8)) ;
+
+  WriteLn('----------AnsiString------------') ;
+  src0 := Utf8ToAnsi('http://test.com:8080/an62.do?name=가나다 ㄱㄴ※'#10'可') ;
+  WriteLn('src0[', Length(src0), ']:', src0) ;
+
+  tmp0 := TAN62.Encode(AnsiToUtf8(src0)) ;
+  WriteLn('tmp0[', Length(tmp0), ']:', tmp0) ;
+
+  out0 := Utf8ToAnsi(TAN62.Decode(tmp0)) ;
+  WriteLn('out0[', Length(out0), ']:', out0) ;
+
+  WriteLn('src0 = out0 : ', (src0 = out0)) ;
+
+  WriteLn('----------WideString----------') ;
+  wsrc := UTF8Decode('http://test.com:8080/an62.do?name=가나다 ㄱㄴ※'#10'可') ;
+  WriteLn('wsrc[', Length(wsrc), ']:', wsrc) ;
+
   wtmp := TAN62.Encode(wsrc) ;
-  WriteLn('wtmp:' + wtmp) ;
-  wout := TAN62.Decode(wtmp) ;
-  WriteLn(UTF8Decode('wout[' + IntToStr(Length(wout)) + ']:') + wout) ;
-  if (wsrc = wout) then WriteLn('wsrc = wout') ;
+  WriteLn('wtmp[', Length(wtmp), ']:', wtmp) ;
 
-  Writeln('----------UTF-8----------') ;
+  wout := UTF8Decode(TAN62.Decode(wtmp)) ;
+  WriteLn('wout[', Length(wout), ']:', wout) ;
+
+  WriteLn('wsrc = wout : ', (wsrc = wout)) ;
+
+  Writeln('----------UTF8String----------') ;
   // [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
-  src1 := 'http://test.com:8080/an62.do?name=가나다 ㄱㄴ※'#10'可🐘' ;
-  WriteLn(UTF8Decode('src1[' + IntToStr(Length(src1)) + ']:') + UTF8Decode(src1)) ;
-  WriteLn(TZString.ToHexa(src1)) ;
-  tmp1 := TAN62.Encode(src1) ;
-  WriteLn('tmp1:' + tmp1) ;
-  out1 := UTF8Encode(TAN62.Decode(tmp1)) ;
-  WriteLn(UTF8Decode('out1[' + IntToStr(Length(out1)) + ']:') + UTF8Decode(out1)) ;
-  WriteLn(TZString.ToHexa(out1)) ;
-  if (src1 = out1) then WriteLn('src1 = out1') ;
-  if (UTF8Decode(src1) = UTF8Decode(out1)) then WriteLn('UTF8Decode(src1) = UTF8Decode(out1)') ;
+  utf8 := UTF8Encode(UTF8Decode('http://test.com:8080/an62.do?name=가나다 ㄱㄴ※'#10'可🐘')) ;
+  WriteLn('utf8[', Length(utf8), ']:', UTF8Decode(utf8)) ;
+
+  tmp8 := TAN62.Encode(utf8) ;
+  WriteLn('tmp8[', Length(tmp8), ']:', tmp8) ;
+
+  out8 := TAN62.Decode(tmp8) ;
+  WriteLn('out8[', Length(out8), ']:', UTF8Decode(out8)) ;
+
+  WriteLn('utf8 = out8 : ', (utf8 = out8)) ;
+
+  WriteLn('----------WideString------------') ;
+  // [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
+  wsrc := UTF8Decode('http://test.com:8080/an62.do?name=가나다 ㄱㄴ※'#10'可🐘') ;
+  WriteLn('wsrc[', Length(wsrc), ']:', wsrc) ;
+
+  wtmp := TAN62.Encode(wsrc) ;
+  WriteLn('wtmp[', Length(wtmp), ']:', wtmp) ;
+
+  wout := UTF8Decode(TAN62.Decode(wtmp)) ;
+  WriteLn('wout[', Length(wout), ']:', wout) ;
+
+  WriteLn('wsrc = wout : ', (wsrc = wout)) ;
 
   ReadLn ;
 end.

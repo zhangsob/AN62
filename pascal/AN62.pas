@@ -8,9 +8,9 @@ uses
 type
   TAN62 = class
     public
-      class function Encode(const s : string) : string ; overload ;
+      class function Encode(const s : UTF8String) : string ; overload ;
       class function Encode(const ws : WideString) : string ; overload ;
-      class function Decode(const s : string) : WideString ;
+      class function Decode(const s : string) : UTF8String ;
   end;
 
 implementation
@@ -21,7 +21,7 @@ uses
 const
   BASE62String = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz' ;
 
-function _AN62_Encode(const utf8 : string) : string ;
+function _AN62_Encode(const utf8 : UTF8String) : string ;
 var
   tmp : string ;
   i, j, len, val, value : Integer ;
@@ -66,14 +66,14 @@ begin
     end ;
 end ;
 
-class function TAN62.Encode(const s : string) : string ;
+class function TAN62.Encode(const s : UTF8String) : string ;
 begin
-  result := _AN62_Encode(TZString.SafeUTF8Encode(s)) ;
+  result := _AN62_Encode(s) ;
 end;
 
 class function TAN62.Encode(const ws : WideString) : string ;
 begin
-  result := _AN62_Encode(TZString.WideStringToString(ws, 65001)) ;
+  result := _AN62_Encode(TZString.SafeUTF8Encode(ws)) ;
 end;
 
 function AN62ToValue(const s : string) : Integer ;
@@ -81,16 +81,10 @@ begin
   result := AnsiPos(s, BASE62String) - 1;
 end;
 
-///<summary> AN62 String To Normal UTF8 String
-///</summary>
-///<param name="s"> AN62 String
-///</param>
-///<returns> Normal UTF8 String
-///<returns>
-class function _AN62_Decode(const s : string) : string ;
+class function TAN62.Decode(const s : string) : UTF8String ;
 var
   i, j, len, val, value : Integer ;
-  tmp : string ;
+  tmp : UTF8String ;
 begin
   result := '' ;
   value := 0;
@@ -131,11 +125,6 @@ begin
       result := result + tmp ;
     end ;
 end ;
-
-class function TAN62.Decode(const s : string) : WideString ;
-begin
-  result := TZString.StringToWideString(_AN62_Decode(s), 65001) ;
-end;
 
 end.
 
