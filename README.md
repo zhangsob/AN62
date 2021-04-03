@@ -27,15 +27,15 @@ BASE64 Encode의 원리도
 
 ## 지원언어
 아래 언어로 소스코드를 올립니다. 
-- java
-- javascript
-- c#
-- cpp
-- python
-- pascal(Delphi) : [Free Pascal 예](#free_pascal)
+- java : [Java 예](#java)
+- javascript : [JavaScript 예](#javascript)
+- c# : [C# 예](#csharp)
+- cpp : [CPP(Windows) 예](#cpp_windows), [CPP(Linux) 예](#cpp_linux)
+- python : [Python 예](#python)
+- pascal(Delphi) : [Delphi 예](#delphi) , [Free Pascal 예](#free_pascal)
 
-## 예
-- java
+<a name='java'></a>
+## Java 예
 ```java
 public static void main(String[] args) {
     try {
@@ -83,8 +83,8 @@ out1:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 src1.equals(out1)
 ```
 
-## 예
-- c#
+<a name='csharp'></a>
+## C# 예
 ```c#
 static void Main(string[] args)
 {
@@ -128,8 +128,8 @@ out1:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 src1.Equals(out1)
 ```
 
-## 예
-- javascript
+<a name="javascript"></a>
+## JavaScript 예
 ```javascript
 function print(msg) {
     if(typeof document !== 'undefined' && typeof msg === 'string')
@@ -217,17 +217,18 @@ out1:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 src1 == out1
 ```
 
-## 예
-- cpp (Windows)
+<a name="cpp_windows"></a>
+## CPP(Windows)예
 ```cpp
 // charset : EUC-KR(on Windows)
+#include <cstdio>
+#include <clocale>
 #include "an62.h"
 #include "zstring.h"
-#include <stdio.h>
 
 int main(int argc, char *argv[])
 {
-	std::string locale(setlocale(LC_ALL, "")) ;
+	std::string locale(std::setlocale(LC_ALL, "")) ;
 	printf("locale : [%s]\n", locale.c_str()) ;
 	printf("sizeof(wchar_t) : %zd\n", sizeof(wchar_t)) ;
 
@@ -245,7 +246,7 @@ int main(int argc, char *argv[])
 		printf("src0[%zd]:%s\n", src0.length(), src0.c_str()) ;
 		std::string tmp0 = an62::encode(system2wstring(src0)) ;
 		printf("tmp0:%s\n", tmp0.c_str()) ;
-		std::string out0 = wstring2string(an62::decode(tmp0)) ;
+		std::string out0 = wstring2ansi(an62::decode(tmp0)) ;
 		printf("out0:%s\n", out0.c_str()) ;
 		printf("src0.compare(out0) : %d\n", src0.compare(out0)) ;
 	}
@@ -258,7 +259,7 @@ int main(int argc, char *argv[])
 			src1.push_back(0xDC18) ;
 		}
 		else {	// Linux
-			src1.push_back(0x01F418) ;
+			src1.push_back((wchar_t)0x01F418) ;
 		}
 		printf("src1[%zd]:%s\n", src1.length(), wstring2system(src1).c_str()) ;
 		std::string tmp1 = an62::encode(src1) ;
@@ -271,10 +272,10 @@ int main(int argc, char *argv[])
 	{
 		// [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
 		std::string utf8 = system2utf8("http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可") ;
-		utf8.push_back(0xF0) ;
-		utf8.push_back(0x9F) ;
-		utf8.push_back(0x90) ;
-		utf8.push_back(0x98) ;
+		utf8.push_back((char)0xF0) ;
+		utf8.push_back((char)0x9F) ;
+		utf8.push_back((char)0x90) ;
+		utf8.push_back((char)0x98) ;
 		std::string tmp1 = an62::encode(utf8_to_wstring(utf8)) ;
 		printf("utf8[%zd]:%s\n", utf8.length(), utf8_to_system(utf8).c_str()) ;
 		printf("tmp1:%s\n", tmp1.c_str()) ;
@@ -315,17 +316,21 @@ out8[61]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可??
 utf8.compare(out8) : 0
 ```
-## 예
-- cpp (Linux)
+
+<a name="cpp_linux"></a>
+## CPP(Linux) 예
 ```cpp
 // charset : UTF-8(on Linux)
 #include "an62.h"
+
+#include <clocale>
+#include <cstdio>
+
 #include "zstring.h"
-#include <stdio.h>
 
 int main(int argc, char *argv[])
 {
-	std::string locale(setlocale(LC_ALL, "")) ;
+	std::string locale(std::setlocale(LC_ALL, "")) ;
 	printf("locale : [%s]\n", locale.c_str()) ;
 	printf("sizeof(wchar_t) : %zd\n", sizeof(wchar_t)) ;
 	
@@ -410,8 +415,8 @@ out8[61]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 utf8.compare(out8) : 0
 ```
 
-## 예
-- pascal (Dephi)
+<a name="delphi"></a>
+## Delphi 예
 ```pascal
 { charset : EUC-KR }
 program AN62Test;
