@@ -1,11 +1,15 @@
-// charset : UTF-8(on Linux)
+﻿// charset : UTF-8(on Linux)
 #include "an62.h"
+
+#include <clocale>
+#include <cstdio>
+
 #include "zstring.h"
-#include <stdio.h>
+
 
 int main(int argc, char *argv[])
 {
-	std::string locale(setlocale(LC_ALL, "")) ;
+	std::string locale(std::setlocale(LC_ALL, "")) ;
 	printf("locale : [%s]\n", locale.c_str()) ;
 	printf("sizeof(wchar_t) : %zd\n", sizeof(wchar_t)) ;
 	
