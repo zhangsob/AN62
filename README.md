@@ -33,6 +33,7 @@ BASE64 Encode의 원리도
 - cpp : [CPP(Windows) 예](#cpp_windows), [CPP(Linux) 예](#cpp_linux)
 - python : [Python 예](#python)
 - pascal(Delphi) : [Delphi 예](#delphi) , [Free Pascal 예](#free_pascal)
+- php : [PHP 예](#php)
 
 <a name='java'></a>
 ## Java 예
@@ -83,7 +84,7 @@ out1:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 src1.equals(out1)
 ```
 
-<a name='csharp'></a>
+<a name="csharp"></a>
 ## C# 예
 ```c#
 static void Main(string[] args)
@@ -530,7 +531,7 @@ utf8 = out8
 
 <a name="free_pascal"></a>
 ## Free Pascal 예
-```pas
+```pascal
 { charset : UTF-8 }
 program AN62Test;
 
@@ -648,4 +649,64 @@ wtmp[82]:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQf
 wout[45]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可??
 wsrc = wout : TRUE
+```
+
+<a name="php"></a>
+## PHP 예
+```php
+<?php require_once 'an62.php' ?>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+</head>
+<body>
+<code>
+<?php
+try {
+	$src0 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可" ;
+	printf("src0[%d] : %s<br/>", strlen($src0), nl2br($src0)) ;
+	$an62__tmp0 = AN62::encode($src0) ;
+	printf("an62__tmp0:%s<br/>", nl2br($an62__tmp0)) ;
+	$an62__out0 = AN62::decode($an62__tmp0) ;
+	printf("an62__out0:%s<br/>", nl2br($an62__out0)) ;
+	$base64_tmp = base64_encode($src0) ;
+	printf("base64_tmp:%s<br/>", nl2br($base64_tmp)) ;
+	$base64_out = base64_decode($base64_tmp) ;
+	printf("base64_out:%s<br/>", nl2br($base64_out)) ;
+	
+	// [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
+	$src1 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘" ;
+	printf("src1[%d]:%s<br/>", strlen($src1), nl2br($src1)) ;
+	$tmp1 = AN62::encode($src1) ;
+	printf("tmp1:%s<br/>", nl2br($tmp1)) ;
+	$out1 = AN62::decode($tmp1) ;
+	printf("out1:%s<br/>", nl2br($out1)) ;
+
+	if($src1 === $out1)	echo("src1 === out1<br/>") ;
+	
+} catch(Exception $ex) {
+	printf("Exception : %s<br/>", $ex->getMessage()) ;
+}
+?>
+</code>
+</body>
+</html>
+```
+-----------------------------------------------------------------------------------
+```
+src0[57] : http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可
+an62__tmp0:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39
+an62__out0:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可
+base64_tmp:aHR0cDovL3Rlc3QuY29tOjgwODAvYW42Mi5kbz9uYW1lPeqwgOuCmOuLpCDjhLHjhLTigLsK5Y+v
+base64_out:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可
+src1[61]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可🐘
+tmp1:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39ybpT2S
+out1:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可🐘
+src1 === out1
 ```
