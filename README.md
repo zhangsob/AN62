@@ -32,7 +32,7 @@ BASE64 Encode의 원리도
 - c#
 - cpp
 - python
-- pascal(Delphi) : [Free Pascal 예](#free-pascal-예)
+- pascal(Delphi) : [Free Pascal 예](#free_pascal)
 
 ## 예
 - java
@@ -523,7 +523,8 @@ utf8[61]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 utf8 = out8
 ```
 
-#Free Pascal 예
+<a name="free_pascal"></a>
+## Free Pascal 예
 ```pas
 { charset : UTF-8 }
 program AN62Test;
