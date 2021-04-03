@@ -1,7 +1,9 @@
 #include "an62.h"
-#include "zstring.h"
+
+#include <cstring>
 #include <vector>
-#include <string.h>
+
+#include "zstring.h"
 
 static char toBase62[62] = {
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
@@ -17,7 +19,7 @@ std::string an62::encode(const std::wstring& text)
 	std::string ret ;
 	long value = 0 ;
 	int val = 0 ;
-	int len = utf8.length() ;
+	int len = (int)utf8.length() ;
 	char tmp[4] ;
 	for(int i = 0; i < len; ++i) {
 		val = (utf8[i] & 0xFF) ;
@@ -49,7 +51,7 @@ std::string an62::encode(const std::wstring& text)
 
 std::wstring an62::decode(const std::string& text)
 {
-	int len = text.length() ;
+	int len = (int)text.length() ;
 	if(len % 4 == 1)	return L"" ;
 
 	std::vector<unsigned char> dst ;

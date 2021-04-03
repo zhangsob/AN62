@@ -18,9 +18,12 @@ BASE64 Encode의 원리도
 256<sup>3</sup> = 64<sup>4</sup> 즉, 2<sup>(8&#42;3)</sup> = 2<sup>(6&#42;4)</sup> 로 3Byte을 6bit씩 4덩어리로 표현한 것이다.
 
 ## 장단점
-단점 : BASE64는 bit연산으로 구현하고, AN62는 산술연산으로 다소 속도는 느림  
+### 장점 
+- 특수문자(기호)가 없어 어떠한 환경에서 값으로 사용할 수 있음.  
 
-장점 : 특수문자(기호)가 없어 어떠한 환경에서 값으로 사용할 수 있음.  
+### 단점
+- BASE64는 bit연산으로 구현하고, AN62는 산술연산으로 다소 속도는 느림  
+- Binary가 안 된다. ( 대안 : [Base62](https://github.com/zhangsob/Base62) 를 이용한다. )
 
 ## 지원언어
 아래 언어로 소스코드를 올립니다. 
@@ -29,7 +32,7 @@ BASE64 Encode의 원리도
 - c#
 - cpp
 - python
-- pascal(Delphi)
+- pascal(Delphi) : [Free Pascal 예제로](#free-pascal)
 
 ## 예
 - java
@@ -519,6 +522,8 @@ utf8[61]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可??
 utf8 = out8
 ```
+
+#free pascal
 ## 예
 - pas (Free Pascal)
 ```pas

@@ -65,7 +65,7 @@ static bool isLitteEndian()
 }
 #endif
 
-std::wstring string2wstring(const std::string& ansi)
+std::wstring ansi2wstring(const std::string& ansi)
 {
 	std::wstring ret ;
 #if defined(_MSC_VER)
@@ -108,7 +108,7 @@ std::wstring string2wstring(const std::string& ansi)
 	return ret ;
 }
 
-std::string wstring2string(const std::wstring& unicode)
+std::string wstring2ansi(const std::wstring& unicode)
 {
 	std::string ret ;
 #if defined(_MSC_VER)
@@ -258,34 +258,34 @@ std::string wstring2utf8(const std::wstring& wstr)
 #endif
 }
 
-std::string utf8_to_string(const std::string& utf8)
+std::string utf8_to_ansi(const std::string& utf8)
 {
 	std::wstring wstr = utf8_to_wstring(utf8) ;
-	return wstring2string(wstr) ;
+	return wstring2ansi(wstr) ;
 }
 
-std::string string2utf8(const std::string& ansi)
+std::string ansi2utf8(const std::string& ansi)
 {
-	std::wstring wstr = string2wstring(ansi) ;
+	std::wstring wstr = ansi2wstring(ansi) ;
 	return wstring2utf8(wstr) ;
 }
 
 std::wstring system2wstring(const std::string& txt)
 {
-	return isSystemUTF8() ? utf8_to_wstring(txt) : string2wstring(txt) ;
+	return isSystemUTF8() ? utf8_to_wstring(txt) : ansi2wstring(txt) ;
 }
 
 std::string wstring2system(const std::wstring& unicode)
 {
-	return isSystemUTF8() ? wstring2utf8(unicode) : wstring2string(unicode) ;
+	return isSystemUTF8() ? wstring2utf8(unicode) : wstring2ansi(unicode) ;
 }
 
 std::string utf8_to_system(const std::string& txt)
 {
-	return isSystemUTF8() ? txt : utf8_to_string(txt) ;
+	return isSystemUTF8() ? txt : utf8_to_ansi(txt) ;
 }
 
 std::string system2utf8(const std::string& txt)
 {
-	return isSystemUTF8() ? txt : string2utf8(txt) ;
+	return isSystemUTF8() ? txt : ansi2utf8(txt) ;
 }
