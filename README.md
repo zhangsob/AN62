@@ -174,8 +174,8 @@ out1:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 src1 === out1
 ```
 
-## 예
-- python
+<a name="python"></a>
+## Python 예
 ```python
 if __name__ == '__main__':
     src0 = 'http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可'
