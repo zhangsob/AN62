@@ -32,7 +32,7 @@ BASE64 Encode의 원리도
 - c#
 - cpp
 - python
-- pascal(Delphi) : [#Free Pascal 예](##free-pascal-예)
+- pascal(Delphi) : [Free Pascal 예](#free-pascal-예)
 
 ## 예
 - java
