@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 final class AN62 {
 	private static $toBase62 = [
 		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
