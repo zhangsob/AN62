@@ -34,6 +34,7 @@ BASE64 Encode의 원리도
 - python : [Python 예](#python)
 - pascal(Delphi) : [Delphi 예](#delphi) , [Free Pascal 예](#free_pascal)
 - php : [PHP 예](#php)
+- kotlin : [Kotlin 예](#kotlin)
 
 <a name='java'></a>
 ## Java 예
@@ -709,4 +710,53 @@ tmp1:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp3
 out1:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可🐘
 src1 === out1
+```
+
+<a name="kotlin"></a>
+## Kotlin 예
+```kotlin
+import java.util.*
+
+fun main(args: Array<String>) {
+    try {
+        val src0 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可"
+        println("src0[" + src0.length + "]:" + src0)
+        val an62__tmp0: String = AN62.encode(src0)
+        println("an62__tmp0:$an62__tmp0")
+        val an62__out0: String = AN62.decode(an62__tmp0)
+        println("an62__out0:$an62__out0")
+        val base64_tmp = Base64.getEncoder().encodeToString(src0.toByteArray(charset("utf8")))
+        println("base64_tmp:$base64_tmp")
+        val base64_out = String(Base64.getDecoder().decode(base64_tmp), charset("utf8"))
+        println("base64_out:$base64_out")
+
+        // [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
+        val src1 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘"
+        println("src1[" + src1.length + "]:" + src1) // String.length()은 문자갯수가 아니라, UTF16의 길이다.
+        val tmp1: String = AN62.encode(src1)
+        println("tmp1:$tmp1")
+        val out1: String = AN62.decode(tmp1)
+        println("out1:$out1")
+        if (src1 == out1) println("src1.equals(out1)")
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+```
+-----------------------------------------------------------------------------------
+```
+src0[43]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可
+an62__tmp0:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39
+an62__out0:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可
+base64_tmp:aHR0cDovL3Rlc3QuY29tOjgwODAvYW42Mi5kbz9uYW1lPeqwgOuCmOuLpCDjhLHjhLTigLsK5Y+v
+base64_out:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可
+src1[45]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可🐘
+tmp1:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39ybpT2S
+out1:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可🐘
+src1.equals(out1)
 ```
