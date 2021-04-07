@@ -20,7 +20,7 @@ import java.util.*
  *
  * @author zhangsob@gmail.com
  *
- * @history 2020-08-25 encode(), decode() 만듦.<br/>
+ * @history 2021-04-07 encode(), decode() 만듦.<br/>
  */
 class AN62 {
     companion object {
@@ -38,29 +38,26 @@ class AN62 {
             val utf8 = text.toByteArray(charset("utf-8"))
             val ret = StringBuilder()
             var value = 0
-            var len = utf8.size
             val tmp = CharArray(4)
-            for (i in 0 until len) {
+            for (i in utf8.indices) {
                 val v : Int = utf8[i].toInt() and 0xFF
                 if (v >= 0xF5) throw UnsupportedEncodingException("invalid UTF8 character")
+
                 value = value * 0xF5 + v
                 if (i % 3 == 2) {
-                    var j = 3
-                    while (j >= 0) {
+                    for(j in 3 downTo 0) {
                         tmp[j] = toBase62[value % 62]
-                        --j
                         value /= 62
                     }
                     value = 0
                     ret.append(tmp, 0, 4)
                 }
             }
-            len = utf8.size % 3
+
+            val len = utf8.size % 3
             if (len > 0) {
-                var j = len
-                while (j >= 0) {
+                for(j in len downTo 0) {
                     tmp[j] = toBase62[value % 62]
-                    --j
                     value /= 62
                 }
                 ret.append(tmp, 0, len + 1)
@@ -102,18 +99,18 @@ class AN62 {
                 }
             }
 
-            len = len % 4
+            len %= 4
             if (len > 0) {
                 len -= 1
-                var j = len - 1
-                while (j >= 0) {
+                for(j in len-1 downTo 0) {
                     tmp[j] = (value % 0xF5).toByte()
-                    --j
                     value /= 0xF5
                 }
+
                 System.arraycopy(tmp, 0, dst, bi, len)
                 bi += len
             }
+
             return String(dst, 0, bi, charset("utf-8"))
         }
     }
