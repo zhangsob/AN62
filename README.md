@@ -35,6 +35,7 @@ BASE64 Encode의 원리도
 - pascal(Delphi) : [Delphi 예](#delphi) , [Free Pascal 예](#free_pascal)
 - php : [PHP 예](#php)
 - kotlin : [Kotlin 예](#kotlin)
+- typescript : [TypeScript 예](#typescript)
 
 <a name='java'></a>
 ## Java 예
@@ -759,4 +760,52 @@ tmp1:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp3
 out1:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可🐘
 src1.equals(out1)
+```
+
+<a name="typescript"></a>
+## TypeScript 예
+```typescript
+function print_msg(msg: string): void {
+    if(typeof document !== 'undefined')
+        document.write(msg.replace(/\n/g,'<br/>') + '<br/>') ;
+    console.log(msg) ;
+}
+
+try {
+    {
+        let src: string = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可" ;
+        print_msg(`src[${src.length}]:${src}`) ;
+        let tmp: string = AN62.encode(src) ;
+        print_msg(`tmp[${tmp.length}]:${tmp}`) ;
+        let out: string = AN62.decode(tmp) ;
+        print_msg(`out[${out.length}]:${out}`) ;
+    }
+    {
+        // [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
+        let src: string = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘" ;
+        print_msg(`src[${src.length}]:${src}`) ;
+        let tmp: string = AN62.encode(src) ;
+        print_msg(`tmp[${tmp.length}]:${tmp}`) ;
+        let out: string = AN62.decode(tmp) ;
+        print_msg(`out[${out.length}]:${out}`) ;
+
+        if(src === out)   print_msg("src === out") ;
+    }
+} catch(e) {
+    print_msg(e) ;
+}
+```
+-----------------------------------------------------------------------------------
+```
+src[43]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可
+tmp[76]:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39
+out[43]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可
+src[45]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可🐘
+tmp[82]:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39ybpT2S
+out[45]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可🐘
+src === out
 ```
