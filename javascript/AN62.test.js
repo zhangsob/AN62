@@ -1,10 +1,6 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>AN62</title>
-<script src='AN62.js'></script>
-<script>
+// for node
+const AN62 = require('./AN62.js') ;
+
 function print(msg) {
     if(typeof document !== 'undefined' && typeof msg === 'string')
         document.write(msg.replace(/\n/g,'<br/>') + '<br/>') ;
@@ -31,9 +27,3 @@ try {
 } catch(e) {
     print(e) ;
 }
-</script>
-</head>
-<body>
-
-</body>
-</html>
