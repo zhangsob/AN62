@@ -56,10 +56,12 @@ namespace AN62 {
     ];
     
     function toUTF8(text: string): number[] {
-        let unicode: number;
+        let unicode: number | undefined;
         let ret: number[] = []
         for(let i = 0, j = 0, len = text.length; i < len; ++i) {
             unicode = text.codePointAt(i) ;
+            if(typeof unicode === 'undefined')  return [] ;
+            
             if(unicode < 0x80) {
                 ret[j++] = unicode ;
             }
