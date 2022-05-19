@@ -1,6 +1,6 @@
 {
     "exclude": ["node_modules"],
-    "include": ["src/**/*"],
+    "include": ["./**/*"],
     "compilerOptions": {
       "lib": ["DOM","es5","es6"],                    
       "target": "ES5",                               

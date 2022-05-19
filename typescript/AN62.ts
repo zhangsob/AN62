@@ -1,5 +1,5 @@
-//tsc -target es2015 AN62.ts
-//node AN62 또는 AN62.html
+//tsc -target es2015 AN62.ts 
+//ts-node AN62.test
 
 /**
  * AN62(AlphaNumeric62)이란.. Text에서 특수문자를 제거한 숫자(10)+영문대문자(26)+영문소문자(26) = 62가지 문자로 변환하기<br/>
@@ -22,7 +22,7 @@
  * 
  * @history 2021-05-07 encode(), decode() 만듦.<br/>
  */
-namespace AN62 {
+export namespace AN62 {
 /****    
     function num2hex(num: number, len: number): string {
         let str: string = '';
@@ -123,8 +123,6 @@ namespace AN62 {
     }
     
     let fromBase62: number[] = Array(128) ;
-    for (let i = 0; i < fromBase62.length; ++i)
-        fromBase62[i] = -1 ;
     for (let i = 0; i < toBase62.length; ++i)
         fromBase62[toBase62[i].charCodeAt(0)] = i ;
 
@@ -176,8 +174,8 @@ namespace AN62 {
 
         for(let i = 0, j = 0; i < len; ++i) {
             let ch: number = text.charCodeAt(i) ;
-            if(ch >= 0x80)
-                throw "invalid AN62 character " + ch ;
+            if(ch >= 0x80)                          throw "invalid AN62 character " + ch ;
+            if(typeof fromBase62[ch] !== 'number')  throw "invalid AN62 character " + ch ;
             
             value = value * 62 + fromBase62[ch] ;
 
@@ -206,34 +204,4 @@ namespace AN62 {
 
         return fromUTF8(dst) ;
     } ;
-}
-
-function print_msg(msg: string): void {
-    if(typeof document !== 'undefined')
-        document.write(msg.replace(/\n/g,'<br/>') + '<br/>') ;
-    console.log(msg) ;
-}
-
-try {
-    {
-        let src: string = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可" ;
-        print_msg(`src[${src.length}]:${src}`) ;
-        let tmp: string = AN62.encode(src) ;
-        print_msg(`tmp[${tmp.length}]:${tmp}`) ;
-        let out: string = AN62.decode(tmp) ;
-        print_msg(`out[${out.length}]:${out}`) ;
-    }
-    {
-        // [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
-        let src: string = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘" ;
-        print_msg(`src[${src.length}]:${src}`) ;
-        let tmp: string = AN62.encode(src) ;
-        print_msg(`tmp[${tmp.length}]:${tmp}`) ;
-        let out: string = AN62.decode(tmp) ;
-        print_msg(`out[${out.length}]:${out}`) ;
-
-        if(src === out)   print_msg("src === out") ;
-    }
-} catch(e) {
-    print_msg(e) ;
 }
