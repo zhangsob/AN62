@@ -23,95 +23,95 @@ import java.util.*
  * @history 2021-04-07 encode(), decode() 만듦.<br/>
  */
 class AN62 {
-    companion object {
-        @JvmStatic
-        private val toBase62 = charArrayOf(
-                '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-                'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-                'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-                'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-                'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z')
+	companion object {
+		@JvmStatic
+		private val toBase62 = charArrayOf(
+				'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+				'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+				'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+				'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+				'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z')
 
-        @JvmStatic
-        @Throws(UnsupportedEncodingException::class)
-        fun encode(text: String): String {
-            val utf8 = text.toByteArray(charset("utf-8"))
-            val ret = StringBuilder()
-            var value = 0
-            val tmp = CharArray(4)
-            for (i in utf8.indices) {
-                val v : Int = utf8[i].toInt() and 0xFF
-                if (v >= 0xF5) throw UnsupportedEncodingException("invalid UTF8 character")
+		@JvmStatic
+		@Throws(UnsupportedEncodingException::class)
+		fun encode(text: String): String {
+			val utf8 = text.toByteArray(charset("utf-8"))
+			val ret = StringBuilder()
+			var value = 0
+			val tmp = CharArray(4)
+			for (i in utf8.indices) {
+				val v : Int = utf8[i].toInt() and 0xFF
+				if (v >= 0xF5) throw UnsupportedEncodingException("invalid UTF8 character")
 
-                value = value * 0xF5 + v
-                if (i % 3 == 2) {
-                    for(j in 3 downTo 0) {
-                        tmp[j] = toBase62[value % 62]
-                        value /= 62
-                    }
-                    value = 0
-                    ret.append(tmp, 0, 4)
-                }
-            }
+				value = value * 0xF5 + v
+				if (i % 3 == 2) {
+					for(j in 3 downTo 0) {
+						tmp[j] = toBase62[value % 62]
+						value /= 62
+					}
+					value = 0
+					ret.append(tmp, 0, 4)
+				}
+			}
 
-            val len = utf8.size % 3
-            if (len > 0) {
-                for(j in len downTo 0) {
-                    tmp[j] = toBase62[value % 62]
-                    value /= 62
-                }
-                ret.append(tmp, 0, len + 1)
-            }
-            return ret.toString()
-        }
+			val len = utf8.size % 3
+			if (len > 0) {
+				for(j in len downTo 0) {
+					tmp[j] = toBase62[value % 62]
+					value /= 62
+				}
+				ret.append(tmp, 0, len + 1)
+			}
+			return ret.toString()
+		}
 
-        @JvmStatic
-        @Throws(UnsupportedEncodingException::class)
-        fun decode(text: String): String {
-            var len = text.length
-            require(len % 4 != 1) { "invalid AN62 length" }
-            val dst = ByteArray(len / 4 * 3 + if (len % 4 > 0) len % 4 - 1 else 0)
-            val tmp = ByteArray(3)
+		@JvmStatic
+		@Throws(UnsupportedEncodingException::class)
+		fun decode(text: String): String {
+			var len = text.length
+			require(len % 4 != 1) { "invalid AN62 length" }
+			val dst = ByteArray(len / 4 * 3 + if (len % 4 > 0) len % 4 - 1 else 0)
+			val tmp = ByteArray(3)
 
-            val fromBase62 = IntArray(128)
-            Arrays.fill(fromBase62, -1)
-            for (i in toBase62.indices)
-                fromBase62[toBase62[i].toInt()] = i
+			val fromBase62 = IntArray(128)
+			Arrays.fill(fromBase62, -1)
+			for (i in toBase62.indices)
+				fromBase62[toBase62[i].toInt()] = i
 
-            var value = 0
-            var bi = 0
-            for (i in text.indices) {
-                val ch = text[i]
-                require(ch.toInt() < 0x80) { "invalid AN62 character $ch" }
-                val v = fromBase62[ch.toInt()]
-                require(v >= 0) { "invalid AN62 character $ch" }
-                value = value * 62 + v
-                if (i % 4 == 3) {
-                    var j = 2
-                    while (j >= 0) {
-                        tmp[j] = (value % 0xF5).toByte()
-                        --j
-                        value /= 0xF5
-                    }
-                    value = 0
-                    System.arraycopy(tmp, 0, dst, bi, 3)
-                    bi += 3
-                }
-            }
+			var value = 0
+			var bi = 0
+			for (i in text.indices) {
+				val ch = text[i]
+				require(ch.toInt() < 0x80) { "invalid AN62 character $ch" }
+				val v = fromBase62[ch.toInt()]
+				require(v >= 0) { "invalid AN62 character $ch" }
+				value = value * 62 + v
+				if (i % 4 == 3) {
+					var j = 2
+					while (j >= 0) {
+						tmp[j] = (value % 0xF5).toByte()
+						--j
+						value /= 0xF5
+					}
+					value = 0
+					System.arraycopy(tmp, 0, dst, bi, 3)
+					bi += 3
+				}
+			}
 
-            len %= 4
-            if (len > 0) {
-                len -= 1
-                for(j in len-1 downTo 0) {
-                    tmp[j] = (value % 0xF5).toByte()
-                    value /= 0xF5
-                }
+			len %= 4
+			if (len > 0) {
+				len -= 1
+				for(j in len-1 downTo 0) {
+					tmp[j] = (value % 0xF5).toByte()
+					value /= 0xF5
+				}
 
-                System.arraycopy(tmp, 0, dst, bi, len)
-                bi += len
-            }
+				System.arraycopy(tmp, 0, dst, bi, len)
+				bi += len
+			}
 
-            return String(dst, 0, bi, charset("utf-8"))
-        }
-    }
+			return String(dst, 0, bi, charset("utf-8"))
+		}
+	}
 }
