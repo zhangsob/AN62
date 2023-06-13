@@ -25,6 +25,8 @@ BASE64 Encode의 원리도
 - BASE64는 bit연산으로 구현하고, AN62는 산술연산으로 다소 속도는 느림  
 - Binary가 안 된다. ( 대안 : [Base62](https://github.com/zhangsob/Base62) 를 이용한다. )
 
+## 본 자료는 [gitbook](https://zhangsob.gitbook.io/an62/principle) 으로 볼 수 있습니다.
+
 ## 지원언어
 아래 언어로 소스코드를 올립니다. 
 - java : [Java 예](#java)
