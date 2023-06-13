@@ -4,6 +4,8 @@
 
 {% tabs %}
 {% tab title="java" %}
+{% embed url="https://github.com/zhangsob/AN62/blob/master/java/AN62.java" %}
+
 ```java
 public static void main(String[] args) {
     try {
@@ -53,6 +55,8 @@ src1.equals(out1)
 {% endtab %}
 
 {% tab title="javascript" %}
+{% embed url="https://github.com/zhangsob/AN62/blob/master/javascript/AN62.test.js" %}
+
 ```javascript
 function print(msg) {
     if(typeof document !== 'undefined' && typeof msg === 'string')
@@ -98,6 +102,8 @@ src1 === out1
 {% endtab %}
 
 {% tab title="c#" %}
+{% embed url="https://github.com/zhangsob/AN62/blob/master/c%23/AN62.cs" %}
+
 {% code fullWidth="false" %}
 ```csharp
 static void Main(string[] args)
@@ -145,6 +151,8 @@ src1.Equals(out1)
 {% endtab %}
 
 {% tab title="cpp" %}
+{% embed url="https://github.com/zhangsob/AN62/blob/master/cpp/an62.utf8.test.cpp" %}
+
 ```cilkcpp
 // charset : EUC-KR(on Windows)
 #include <cstdio>
