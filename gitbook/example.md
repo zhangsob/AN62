@@ -286,6 +286,8 @@ utf8.compare(out8) : 0
 {% endtab %}
 
 {% tab title="python" %}
+{% embed url="https://github.com/zhangsob/AN62/blob/master/python/AN62.py" %}
+
 ```python
 if __name__ == '__main__':
     src0 = 'http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可'
@@ -331,6 +333,8 @@ src1 == out1
 
 {% tab title="pascal" %}
 * Delphi
+
+{% embed url="https://github.com/zhangsob/AN62/blob/master/pascal/AN62Test.dpr" %}
 
 ```pascal
 { charset : EUC-KR }
@@ -444,6 +448,8 @@ utf8 = out8
 ```
 
 * Free Pascal
+
+{% embed url="https://github.com/zhangsob/AN62/blob/master/pascal/AN62Test.lpr" %}
 
 ```pascal
 { charset : UTF-8 }
@@ -567,6 +573,8 @@ wsrc = wout : TRUE
 {% endtab %}
 
 {% tab title="php" %}
+{% embed url="https://github.com/zhangsob/AN62/blob/master/php/an62.test.php" %}
+
 ```php
 <?php require_once 'an62.php' ?>
 <!DOCTYPE html>
@@ -678,6 +686,8 @@ src1.equals(out1)
 {% endtab %}
 
 {% tab title="typescript" %}
+{% embed url="https://github.com/zhangsob/AN62/blob/master/typescript/AN62.test.ts" %}
+
 ```typescript
 function print_msg(msg: string): void {
     if(typeof document !== 'undefined')
