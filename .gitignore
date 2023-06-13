@@ -1,0 +1,54 @@
+﻿# 제외할 확장자들.
+output*
+tmp*
+temp*
+## bak화일
+*.bak
+## zip화일
+*.zip
+## java class화일
+*.class
+## android aar,apk화일
+*.aar
+*.apk
+local.properties
+## Visual Studio 화일
+*.vcxproj*
+*.csproj
+*.sln
+*.exe
+## Cmake화일
+cmake_install.cmake
+CMakeCache.txt
+## eclipse
+.classpath
+.project
+## node
+package-lock.json
+
+# 제외할 Directory들.
+output/
+tmp/
+temp/
+## android
+.idea/
+.cxx/
+## gradle
+.gradle/
+build/
+## cmake
+zlib_outputs/
+CMakeFiles/
+## Visual Studio
+.vs/
+x64/
+Debug/
+Release/
+*.dir/
+## eclipse
+.settings/
+bin/
+## node
+node_modules/
+## vscode
+.vscode/
