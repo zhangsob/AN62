@@ -33,11 +33,13 @@ public class AN62 {
 
 	public static String encode(String text) throws UnsupportedEncodingException {
 		byte[] utf8 = text.getBytes("utf-8");
-		StringBuilder ret = new StringBuilder() ;
+		char[] ret_buffer = new char[((utf8.length + 2) / 3) * 4] ;
+		//StringBuilder ret = new StringBuilder() ;
 		int value = 0 ;
 		int val = 0 ;
 		int len = utf8.length ;
-		char[] tmp = new char[4] ;
+		//char[] tmp = new char[4] ;
+		int ri = 0;
 		for(int i = 0; i < len; ++i) {
 			val = (utf8[i] & 0xFF) ;
 			if(val >= 0xF5) throw new UnsupportedEncodingException("invalid UTF8 character") ;
@@ -45,22 +47,27 @@ public class AN62 {
 			value = value * 0xF5 + val;
 			if(i % 3 == 2) {
 				for(int j = 3; j >= 0; --j, value /= 62)
-					tmp[j] = toBase62[value % 62];
+					ret_buffer[ri +j] = toBase62[value % 62] ;
+					//tmp[j] = toBase62[value % 62];
 
 				value = 0 ;
-				ret.append(tmp, 0, 4) ;
+				ri += 4 ;
+				//ret.append(tmp, 0, 4) ;
 			}
 		}
 		
 		len = utf8.length % 3 ;
 		if(len > 0) {
 			for(int j = len; j >= 0; --j, value /= 62)
-				tmp[j] = toBase62[value % 62];
+				ret_buffer[ri +j] = toBase62[value % 62] ;
+				//tmp[j] = toBase62[value % 62];
 
-			ret.append(tmp, 0, len+1) ;
+			ri += len + 1 ;
+			//ret.append(tmp, 0, len+1) ;
 		}
 
-		return ret.toString() ;
+		return new String(ret_buffer, 0, ri) ;
+		//return ret.toString() ;
 	}
 
 	private static final int[] fromBase62 = new int[128] ;
@@ -116,27 +123,56 @@ public class AN62 {
 
 	public static void main(String[] args) {
 		try {
-			String src0 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可" ;
-			System.out.println("src0["+src0.length()+"]:" + src0) ;
-			String an62__tmp0 = AN62.encode(src0) ;
-			System.out.println("an62__tmp0:" + an62__tmp0) ;
-			String an62__out0 = AN62.decode(an62__tmp0) ;
-			System.out.println("an62__out0:" + an62__out0) ;
-			String base64_tmp = java.util.Base64.getEncoder().encodeToString(src0.getBytes("utf8")) ;
-			System.out.println("base64_tmp:" + base64_tmp) ;
-			String base64_out = new String(java.util.Base64.getDecoder().decode(base64_tmp), "utf8") ;
-			System.out.println("base64_out:" + base64_out) ;
-
-			// [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
-			String src1 = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘" ;
-			System.out.println("src1["+src1.length()+"]:" + src1) ;		// String.length()은 문자갯수가 아니라, UTF16의 길이다. 
-			String tmp1 = AN62.encode(src1) ;
-			System.out.println("tmp1:" + tmp1) ;
-			String out1 = AN62.decode(tmp1) ;
-			System.out.println("out1:" + out1) ;
-			
-			if(src1.equals(out1))	System.out.println("src1.equals(out1)") ;
-			
+/*********
+			{
+				String base = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可" ;
+				long encode = 0 ;
+				long decode = 0 ;
+				int len = base.length() ;
+				long start_time = 0 ;
+				for(int i = 0; i < 1000; ++i)
+				for(int j = 0; j < len; ++j)
+				{
+					String src = base.substring(j) ;
+					
+					start_time = System.nanoTime() ;
+					String tmp = AN62.encode(src) ;
+					encode += System.nanoTime() - start_time ;
+					
+					start_time = System.nanoTime() ;
+					String out = AN62.decode(tmp) ;
+					decode += System.nanoTime() - start_time ;
+					
+					assert src.equals(out) : "src.equals(out) == false" ;
+				}
+				System.out.println("encode = " + encode/1000 + " nano sec") ;
+				System.out.println("decode = " + decode/1000 + " nano sec") ;
+			}
+			System.out.println("---------------------------------") ;
+*********/
+			{
+				String src = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可" ;
+				System.out.println("src["+src.length()+"]:" + src) ;
+				String an62___tmp = AN62.encode(src) ;
+				System.out.println("an62___tmp:" + an62___tmp) ;
+				String an62___out = AN62.decode(an62___tmp) ;
+				System.out.println("an62___out:" + an62___out) ;
+				String base64_tmp = java.util.Base64.getEncoder().encodeToString(src.getBytes("utf8")) ;
+				System.out.println("base64_tmp:" + base64_tmp) ;
+				String base64_out = new String(java.util.Base64.getDecoder().decode(base64_tmp), "utf8") ;
+				System.out.println("base64_out:" + base64_out) ;
+			}
+			System.out.println("---------------------------------") ;
+			{
+				// [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
+				String src = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘" ;
+				System.out.println("src:" + src) ;
+				String tmp = AN62.encode(src) ;
+				System.out.println("tmp:" + tmp) ;
+				String out = AN62.decode(tmp) ;
+				System.out.println("out:" + out) ;
+				if(src.equals(out))	System.out.println("src.equals(out)") ;
+			}
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
