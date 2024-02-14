@@ -31,15 +31,13 @@ public class AN62 {
 		'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
 	};
 
-	public static String encode(String text) throws UnsupportedEncodingException {
+	public static String encodeOld(String text) throws UnsupportedEncodingException {
 		byte[] utf8 = text.getBytes("utf-8");
-		char[] ret_buffer = new char[((utf8.length + 2) / 3) * 4] ;
-		//StringBuilder ret = new StringBuilder() ;
+		StringBuilder ret = new StringBuilder() ;
 		int value = 0 ;
 		int val = 0 ;
 		int len = utf8.length ;
-		//char[] tmp = new char[4] ;
-		int ri = 0;
+		char[] tmp = new char[4] ;
 		for(int i = 0; i < len; ++i) {
 			val = (utf8[i] & 0xFF) ;
 			if(val >= 0xF5) throw new UnsupportedEncodingException("invalid UTF8 character") ;
@@ -47,27 +45,56 @@ public class AN62 {
 			value = value * 0xF5 + val;
 			if(i % 3 == 2) {
 				for(int j = 3; j >= 0; --j, value /= 62)
-					ret_buffer[ri +j] = toBase62[value % 62] ;
-					//tmp[j] = toBase62[value % 62];
+					tmp[j] = toBase62[value % 62];
 
 				value = 0 ;
-				ri += 4 ;
-				//ret.append(tmp, 0, 4) ;
+				ret.append(tmp, 0, 4) ;
 			}
 		}
 		
 		len = utf8.length % 3 ;
 		if(len > 0) {
 			for(int j = len; j >= 0; --j, value /= 62)
-				ret_buffer[ri +j] = toBase62[value % 62] ;
-				//tmp[j] = toBase62[value % 62];
+				tmp[j] = toBase62[value % 62];
+
+			ret.append(tmp, 0, len+1) ;
+		}
+
+		return ret.toString() ;
+	}
+	
+	public static String encode(String text) throws UnsupportedEncodingException {
+		byte[] utf8 = text.getBytes("utf-8");
+		char[] ret_buffer = new char[((utf8.length + 2) / 3) * 4] ;
+		int value = 0 ;
+
+		int len = utf8.length ;
+		int ri = 0;
+		for(int i = 0; i < len; ++i) {
+			value = value * 0xF5 + (utf8[i] & 0xFF);
+			if(i % 3 == 2) {
+				ret_buffer[ri + 3] = toBase62[value % 62] ;
+				value /= 62 ;
+				ret_buffer[ri + 2] = toBase62[value % 62] ;
+				value /= 62 ;
+				ret_buffer[ri + 1] = toBase62[value % 62] ;
+				value /= 62 ;
+				ret_buffer[ri] = toBase62[value] ;
+
+				value = 0 ;
+				ri += 4 ;
+			}
+		}
+		
+		len = utf8.length % 3 ;
+		if(len > 0) {
+			for(int j = len; j >= 0; --j, value /= 62)
+				ret_buffer[ri + j] = toBase62[value % 62] ;
 
 			ri += len + 1 ;
-			//ret.append(tmp, 0, len+1) ;
 		}
 
 		return new String(ret_buffer, 0, ri) ;
-		//return ret.toString() ;
 	}
 
 	private static final int[] fromBase62 = new int[128] ;
@@ -77,7 +104,7 @@ public class AN62 {
 			fromBase62[toBase62[i]] = i;
 	}
 
-	public static String decode(String text) throws UnsupportedEncodingException {
+	public static String decodeOld(String text) throws UnsupportedEncodingException {
 		int len = text.length() ;
 		if(len % 4 == 1)	throw new IllegalArgumentException("invalid AN62 length") ;
 
@@ -120,36 +147,96 @@ public class AN62 {
 
 		return new String(dst, 0, bi, "utf-8");
 	}
+	
+	public static String decode(String text) throws UnsupportedEncodingException {
+		char[] chs = text.toCharArray() ;
+		int len = chs.length ;
+		if(len % 4 == 1)	throw new IllegalArgumentException("invalid AN62 length") ;
+
+		byte[] dst = new byte[len / 4 * 3 + ((len % 4 > 0) ? len%4 - 1 : 0)] ;
+		byte[] tmp = new byte[3] ;
+		int value = 0 ;
+		int val = 0 ;
+
+		int bi = 0 ;
+		int ii = 0 ;
+		for(char ch : chs) {
+			if(ch >= 0x80)
+				throw new IllegalArgumentException("invalid AN62 character " + ch) ;
+			
+			val = fromBase62[ch] ;
+			if(val < 0)
+				throw new IllegalArgumentException("invalid AN62 character " + ch) ;
+			
+			value = value * 62 + val;
+			if(++ii % 4 == 0) {
+				dst[bi + 2] = (byte)(value % 0xF5) ;
+				value /= 0xF5 ;
+				dst[bi + 1] = (byte)(value % 0xF5) ;
+				value /= 0xF5 ;
+				dst[bi] = (byte)value ;
+
+				value = 0 ;
+				bi += 3 ;
+			}
+		}
+
+		len = len % 4 ;
+		if(len > 0) {
+			len -= 1 ;
+			for(int j = len-1; j >= 0; --j, value /= 0xF5)
+				tmp[j] = (byte)(value % 0xF5) ;
+
+			System.arraycopy(tmp, 0, dst, bi, len);
+			bi += len ;
+		}
+
+		return new String(dst, 0, bi, "utf-8");
+	}
 
 	public static void main(String[] args) {
 		try {
-/*********
+			if(true)
 			{
-				String base = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可" ;
-				long encode = 0 ;
-				long decode = 0 ;
-				int len = base.length() ;
+				String src = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可" ;
+				long encode = 0, decode = 0, encodeOld = 0, decodeOld = 0 ;
 				long start_time = 0 ;
-				for(int i = 0; i < 1000; ++i)
-				for(int j = 0; j < len; ++j)
+				String tmp = "", out = "";
+				
 				{
-					String src = base.substring(j) ;
-					
 					start_time = System.nanoTime() ;
-					String tmp = AN62.encode(src) ;
+					for(int i = 0; i < 1000; ++i)
+						tmp = AN62.encodeOld(src) ;
+					encodeOld += System.nanoTime() - start_time ;
+				
+					start_time = System.nanoTime() ;
+					for(int i = 0; i < 1000; ++i)
+						tmp = AN62.encode(src) ;
 					encode += System.nanoTime() - start_time ;
 					
 					start_time = System.nanoTime() ;
-					String out = AN62.decode(tmp) ;
+					for(int i = 0; i < 1000; ++i)
+						out = AN62.decodeOld(tmp) ;
+					decodeOld += System.nanoTime() - start_time ;
+					
+					start_time = System.nanoTime() ;
+					for(int i = 0; i < 1000; ++i)
+						out = AN62.decode(tmp) ;
 					decode += System.nanoTime() - start_time ;
 					
 					assert src.equals(out) : "src.equals(out) == false" ;
 				}
+				
 				System.out.println("encode = " + encode/1000 + " nano sec") ;
+				System.out.println("   old = " + encodeOld/1000 + " nano sec") ;
 				System.out.println("decode = " + decode/1000 + " nano sec") ;
+				System.out.println("   old = " + decodeOld/1000 + " nano sec") ;
+				System.out.printf("encode / decode : %5.2f %%%n", encode * (float)100 / (float)decode);
+				System.out.printf("encode /    old : %5.2f %%%n", encode * (float)100 / (float)encodeOld);
+				System.out.printf("decode /    old : %5.2f %%%n", decode * (float)100 / (float)decodeOld);
+				System.out.println("---------------------------------") ;
 			}
-			System.out.println("---------------------------------") ;
-*********/
+			
 			{
 				String src = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可" ;
 				System.out.println("src["+src.length()+"]:" + src) ;
@@ -165,7 +252,7 @@ public class AN62 {
 			System.out.println("---------------------------------") ;
 			{
 				// [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
-				String src = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘" ;
+				String src = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘1" ;
 				System.out.println("src:" + src) ;
 				String tmp = AN62.encode(src) ;
 				System.out.println("tmp:" + tmp) ;
