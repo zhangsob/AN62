@@ -20,7 +20,7 @@
  * @history 2020-08-25 encode(), decode() 만듦.<br/>
  */
 var AN62 = (function() {
-/*********
+/*********/
 	function num2hex(num, len) {
 		var i = 0, str = '', hex_tab = '0123456789ABCDEF';
 		for(i = 0; i < len; ++i) {
@@ -42,7 +42,7 @@ var AN62 = (function() {
 		}
 		console.log(line) ;
 	}
-*********/
+/*********/
 
 	if (!String.prototype.codePointAt) {
 		String.prototype.codePointAt = function (idx) {
@@ -102,10 +102,12 @@ var AN62 = (function() {
 			'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
 	];
 	
-	var toUTF8 = function(text) {
+	var toUTF8Old = function(text) {
 		var i = 0, unicode = 0, ret = [], j = 0, len = text.length ;
+		//ret.length = text.length * 4 ;
 		for(i = 0; i < len; ++i) {
 			unicode = text.codePointAt(i) ;
+			//console.log('unicode[' + i + '/' + len + ']:0x' + num2hex(unicode, 6)) ;
 			if(unicode < 0x80) {
 				ret[j++] = unicode ;
 			}
@@ -129,11 +131,12 @@ var AN62 = (function() {
 				++i ;   // string의 length는 utf16기준임.
 			}
 		}
+		//ret.length = j ;
 		return ret ;
 	} ;
 
-	var encode = function(text) {
-		var utf8 = toUTF8(text) ;
+	var encodeOld = function(text) {
+		var utf8 = toUTF8Old(text) ;
 		var ret = [] ;
 		var value = 0 ;
 		var val = 0 ;
@@ -168,14 +171,87 @@ var AN62 = (function() {
 		
 		return ret.join('') ;
 	} ;
+
+	var toUTF8 = function(text) {
+		var i = 0, utf16 = 0, ret = [], j = 0, len = text.length, surrogate = 0 ;
+		for(i = 0; i < len; ++i) {
+			utf16 = text.charCodeAt(i) ;
+			if(utf16 < 0x80) {
+				ret[j++] = utf16 ;
+			}
+			else if(utf16 < 0x800) {
+				ret[j++] = 0xC0 | (utf16 >> 6) ;
+				ret[j++] = 0x80 | (utf16 & 0x3F) ;
+			}
+			else if((utf16 & 0xF800) == 0xD800) {
+				if(utf16 < 0xDC00) {
+					surrogate = (utf16 & 0x03FF) + 0x40 ;
+					ret[j++] = 0xF0 | (surrogate >> 8) ;
+					surrogate &= 0x00FF ;
+					ret[j++] = 0x80 | (surrogate >> 2)  ;
+					surrogate &= 0x0003 ;
+				}
+				else {
+					utf16 = (utf16 & 0x03FF) + (surrogate << 10) ;
+					ret[j++] = 0x80 | (utf16 >> 6) ;
+					ret[j++] = 0x80 | (utf16 & 0x3F) ;
+				}
+			}
+			else {
+				ret[j++] = 0xE0 | (utf16 >> 12) ;
+				utf16 &= 0x00FFF ;
+				ret[j++] = 0x80 | (utf16 >> 6) ;
+				ret[j++] = 0x80 | (utf16 & 0x3F) ;
+			}
+		}
+		return ret ;
+	} ;
 	
+	var encode = function(text) {
+		var utf8 = toUTF8(text) ;
+		var len = utf8.length ;
+		var ret = [] ;
+		ret.length = Math.floor(len / 3) * 4 + ((len % 3 > 0) ? len % 3 + 1 : 0) ;
+		var value = 0 ;
+		var val = 0 ;
+		
+		var i = 0, j = 0, ri = 0 ;
+		for(i = 0; i < len; ++i) {
+			val = utf8[i] ;
+			if(val >= 0xF5) throw "invalid UTF8 character" ;
+			
+			value = value * 0xF5 + val ;
+
+			if(i % 3 == 2) {
+				ret[ri + 3] = toBase62[value % 62];
+				value = Math.floor(value / 62);
+				ret[ri + 2] = toBase62[value % 62];
+				value = Math.floor(value / 62);
+				ret[ri + 1] = toBase62[value % 62];
+				value = Math.floor(value / 62);
+				ret[ri] = toBase62[value];
+
+				value = 0 ;
+				ri += 4 ;
+			}
+		}
+		
+		len = utf8.length % 3 ;
+		if(len > 0) {
+			for(j = len; j >= 0; --j, value = Math.floor(value / 62))
+				ret[ri + j] = toBase62[value % 62] ;
+		}
+		
+		return ret.join('') ;
+	} ;
+
 	var fromBase62 = Array(128) ;
 	for (i = 0; i < fromBase62.length; ++i)
 		fromBase62[i] = -1 ;
 	for (i = 0; i < toBase62.length; ++i)
 		fromBase62[toBase62[i].charCodeAt(0)] = i ;
 
-	var fromUTF8 = function(utf8) {
+	var fromUTF8Old = function(utf8) {
 		var val = 0, i = 0, count = 0, value = 0, len = utf8.length, ret = '' ;
 		for(i = 0; i < len; ++i) {
 			val = utf8[i] ;
@@ -211,7 +287,7 @@ var AN62 = (function() {
 		return ret ;
 	} ;
 
-	var decode = function(text) {
+	var decodeOld = function(text) {
 		var len = text.length ;
 		if(len % 4 == 1)    throw "invalid AN62 length" ;
 		
@@ -252,10 +328,98 @@ var AN62 = (function() {
 			bi += len ;
 		}
 
-		return fromUTF8(dst) ;
+		return fromUTF8Old(dst) ;
 	} ;
 	
+	var fromUTF8 = function(utf8) {
+		var val = 0, i = 0, count = 0, value = 0, len = utf8.length, ret = [], ri = 0 ;
+		ret.length = len ;
+		for(i = 0; i < len; ++i) {
+			val = utf8[i] ;
+			if(val < 0x80) {
+				ret[ri++] = val ;
+			}
+			else if(val < 0xC0) {
+				if(count == 0)	throw "invalid UTF8" ;
+
+				value <<= 6 ;
+				value |= val & 0x3F ;
+				if(--count == 0) {
+					if(value > 0xFFFF) {
+						ret[ri++] = 0xD800 | ((value-0x010000) / 0x0400) ;
+						ret[ri++] = 0xDC00 | (value & 0x03FF) ;
+					}
+					else
+						ret[ri++] = value ;
+				}
+			}
+			else {
+				if(count != 0)	throw "invalid UTF8" ;
+				
+				if(val < 0xE0) {
+					count = 1 ;
+					value = val & 0x1F ;
+				}
+				else if(val < 0xF0) {
+					count = 2 ;
+					value = val & 0x0F ;
+				}
+				else if(val < 0xF5) {
+					count = 3 ;
+					value = val & 0x07 ;
+				}
+				else {
+					throw "invalid UTF8" ;
+				}
+			}
+		}
+		ret.length = ri ;
+		return String.fromCharCode.apply(null, ret) ;
+	} ;
+
+	var decode = function(text) {
+		var len = text.length ;
+		if(len % 4 == 1)    throw "invalid AN62 length" ;
+		
+		var dst = [] ;
+		dst.length = Math.floor(len / 4) * 3 + ((len % 4 > 0) ? len % 4 - 1 : 0) ;
+		var value = 0 ;
+		var ch = 0 ;
+		
+		var bi = 0 ;
+		var i = 0, j = 0;
+		for(i = 0; i < len; ++i) {
+			ch = text.charCodeAt(i) ;
+			if(ch >= 0x80)
+				throw "invalid AN62 character " + ch ;
+			
+			value = value * 62 + fromBase62[ch] ;
+
+			if(i % 4 == 3) {
+				dst[bi + 2] = value % 0xF5 ;
+				value = Math.floor(value / 0xF5) ;
+				dst[bi + 1] = value % 0xF5 ;
+				value = Math.floor(value / 0xF5) ;
+				dst[bi] = value ;
+
+				value = 0 ;
+				bi += 3 ;
+			}
+		}
+		
+		len = len % 4 ;
+		if(len > 0) {
+			len -= 1 ;
+			for(j = len-1; j >= 0; --j, value = Math.floor(value / 0xF5))
+				dst[bi + j] = value % 0xF5 ;
+		}
+
+		return fromUTF8(dst) ;
+	} ;
+
 	return {
+		encodeOld : encodeOld,
+		decodeOld : decodeOld,
 		encode : encode,
 		decode : decode,
 	} ;
