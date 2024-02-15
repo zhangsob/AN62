@@ -11,7 +11,9 @@ std::wstring ansi2wstring(const std::string& ansi) ;
 std::string wstring2ansi(const std::wstring& unicode) ;
 
 std::wstring utf8_to_wstring(const std::string& utf8) ;
+std::wstring utf8_to_wstring(const unsigned char* utf8, size_t utf8_size);
 std::string wstring2utf8(const std::wstring& unicode) ;
+size_t wstring2utf8(unsigned char* ret, const std::wstring& wstr);
 
 std::string utf8_to_ansi(const std::string& utf8) ;
 std::string ansi2utf8(const std::string& ansi) ;

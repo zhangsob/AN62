@@ -70,7 +70,7 @@ std::wstring ansi2wstring(const std::string& ansi)
 	std::wstring ret ;
 #if defined(_MSC_VER)
 	ret.resize(ansi.length()+1) ;
-	int len = ::MultiByteToWideChar(CP_ACP, 0, (LPCSTR)ansi.data(), ansi.length(), &ret[0], ret.size()) ;
+	int len = ::MultiByteToWideChar(CP_ACP, 0, (LPCSTR)ansi.data(), (int)ansi.length(), &ret[0], (int)ret.size()) ;
 	ret.resize(len >= 0 ? len : 0) ;
 #elif defined(_ICONV_H) || defined(_LIBICONV_H)
 	bool isLE = isLitteEndian() ;
@@ -146,11 +146,11 @@ std::string wstring2ansi(const std::wstring& unicode)
 	iconv_close(ic);
 	if (result == (size_t)-1) {
 #if 0
-  		char errmsg[10] = "";
-  		if (errno == E2BIG) sprintf(errmsg, "E2BIG");
-  		if (errno == EILSEQ) sprintf(errmsg, "EILSEQ");
-  		if (errno == EINVAL) sprintf(errmsg, "EINVAL");
-  		fprintf(stderr, "Fail to iconv() errorno : %s(%d)\n", errmsg, errno);
+		char errmsg[10] = "";
+		if (errno == E2BIG) sprintf(errmsg, "E2BIG");
+		if (errno == EILSEQ) sprintf(errmsg, "EILSEQ");
+		if (errno == EINVAL) sprintf(errmsg, "EINVAL");
+		fprintf(stderr, "Fail to iconv() errorno : %s(%d)\n", errmsg, errno);
 #endif
 		ret.clear() ;
 	}
@@ -212,16 +212,68 @@ std::wstring utf8_to_wstring(const std::string& utf8)
 #endif
 }
 
+std::wstring utf8_to_wstring(const unsigned char *utf8, size_t utf8_size)
+{
+	//std::wstring ret(utf8_size, 0x00) ;
+	wchar_t* ret = (wchar_t *)malloc(sizeof(wchar_t) * utf8_size);
+	int count = 0;
+	unsigned int value = 0;
+
+	size_t ri = 0;
+	for (size_t i = 0; i < utf8_size; ++i) {
+		int val = utf8[i];
+		if (count == 0) {
+			if ((val & 0xF8) == 0xF0) {
+				count = 3;
+				value = val & 0x07;
+			}
+			else if ((val & 0xF0) == 0xE0) {
+				count = 2;
+				value = val & 0x0F;
+			}
+			else if ((val & 0xE0) == 0xC0) {
+				count = 1;
+				value = val & 0x1F;
+			}
+			else {
+				ret[ri++] = val;
+				value = 0;
+			}
+		}
+		else {
+			//if((val & 0xC0) != 0x80) throw std::excep("Illegal UTF8") ;
+
+			value <<= 6;
+			value |= val & 0x3F;
+
+			if (--count == 0) {
+				if (value > 0xFFFF && sizeof(wchar_t) == 2) {	// UTF-16
+					ret[ri++] = (0xD800 | (((value >> 16) - 1) << 6) | ((value >> 10) & 0x003F));
+					ret[ri++] = (0xDC00 | (value & 0x03FF));
+				}
+				else {	// UTF-32
+					ret[ri++] = (value);
+				}
+				value = 0;
+			}
+		}
+	}
+
+	std::wstring r(ret, ri);
+	free(ret);
+	return r;
+}
+
 std::string wstring2utf8(const std::wstring& wstr)
 {
 #if defined(_CODECVT_)
-    std::wstring_convert<std::codecvt_utf8<wchar_t>> wconv;
+	std::wstring_convert<std::codecvt_utf8<wchar_t>> wconv;
 	return wconv.to_bytes(wstr);
 #else
 	std::string ret ;
 	unsigned int value = 0 ;
-    for(const auto& wc : wstr) {
-		if((wc & 0xF800) == 0xD800) {
+	for(const auto& wc : wstr) {
+		if((wc & 0xFFF800) == 0xD800) {
 			if(wc & 0x0400) {	// Low-Surrogate : 0xDC00 ~ 0xDFFF
 				value = (value << 10) | (wc & 0x03FF) ;
 			}
@@ -256,6 +308,47 @@ std::string wstring2utf8(const std::wstring& wstr)
 
 	return ret ;
 #endif
+}
+
+size_t wstring2utf8(unsigned char* ret, const std::wstring& wstr)
+{
+	unsigned int value = 0;
+	size_t ri = 0;
+	for (const auto& wc : wstr) {
+		if ((wc & 0xFFF800) == 0xD800) {
+			if (wc & 0x0400) {	// Low-Surrogate : 0xDC00 ~ 0xDFFF
+				value = (value << 10) | (wc & 0x03FF);
+			}
+			else {				// High-Surrogate : 0xD800 ~ 0xDBFF 
+				value = (wc & 0x03FF) + 0x40;
+				continue;
+			}
+		}
+		else {
+			value = wc;
+		}
+
+		if (value < 0x0080) {
+			ret[ri++] = value;
+		}
+		else if (value < 0x0800) {
+			ret[ri++] = 0xC0 | (value >> 6);
+			ret[ri++] = 0x80 | (value & 0x3F);
+		}
+		else if (value < 0x010000) {
+			ret[ri++] = 0xE0 | (value >> 12);
+			ret[ri++] = 0x80 | ((value >> 6) & 0x3F);
+			ret[ri++] = 0x80 | (value & 0x3F);
+		}
+		else {
+			ret[ri++] = 0xF0 | (value >> 18);
+			ret[ri++] = 0x80 | ((value >> 12) & 0x3F);
+			ret[ri++] = 0x80 | ((value >> 6) & 0x3F);
+			ret[ri++] = 0x80 | (value & 0x3F);
+		}
+	}
+
+	return ri;
 }
 
 std::string utf8_to_ansi(const std::string& utf8)
