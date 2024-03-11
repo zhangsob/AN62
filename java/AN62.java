@@ -20,7 +20,7 @@ import java.util.Arrays;
  *        
  * @author zhangsob@gmail.com
  * 
- * @history 2020-08-25 encode(), decode() 만듦.<br/>             
+ * @history 2020-08-25 encode(), decode() 만듦.<br/>
  */
 public class AN62 {
 	private static final char[] toBase62= {
@@ -65,12 +65,12 @@ public class AN62 {
 	
 	public static String encode(String text) throws UnsupportedEncodingException {
 		byte[] utf8 = text.getBytes("utf-8");
-		char[] ret_buffer = new char[((utf8.length + 2) / 3) * 4] ;
+		int utf8_len = utf8.length ;
+		char[] ret_buffer = new char[utf8_len/3*4 + (utf8_len%3 > 0 ? utf8_len%3 + 1 : 0) ] ;
 		int value = 0 ;
 
-		int len = utf8.length ;
 		int ri = 0;
-		for(int i = 0; i < len; ++i) {
+		for(int i = 0; i < utf8_len; ++i) {
 			value = value * 0xF5 + (utf8[i] & 0xFF);
 			if(i % 3 == 2) {
 				ret_buffer[ri + 3] = toBase62[value % 62] ;
@@ -86,15 +86,13 @@ public class AN62 {
 			}
 		}
 		
-		len = utf8.length % 3 ;
+		int len = utf8_len % 3 ;
 		if(len > 0) {
 			for(int j = len; j >= 0; --j, value /= 62)
 				ret_buffer[ri + j] = toBase62[value % 62] ;
-
-			ri += len + 1 ;
 		}
 
-		return new String(ret_buffer, 0, ri) ;
+		return new String(ret_buffer) ;
 	}
 
 	private static final int[] fromBase62 = new int[128] ;
@@ -154,7 +152,6 @@ public class AN62 {
 		if(len % 4 == 1)	throw new IllegalArgumentException("invalid AN62 length") ;
 
 		byte[] dst = new byte[len / 4 * 3 + ((len % 4 > 0) ? len%4 - 1 : 0)] ;
-		byte[] tmp = new byte[3] ;
 		int value = 0 ;
 		int val = 0 ;
 
@@ -185,13 +182,10 @@ public class AN62 {
 		if(len > 0) {
 			len -= 1 ;
 			for(int j = len-1; j >= 0; --j, value /= 0xF5)
-				tmp[j] = (byte)(value % 0xF5) ;
-
-			System.arraycopy(tmp, 0, dst, bi, len);
-			bi += len ;
+				dst[bi + j] = (byte)(value % 0xF5) ;
 		}
 
-		return new String(dst, 0, bi, "utf-8");
+		return new String(dst, "utf-8");
 	}
 
 	public static void main(String[] args) {

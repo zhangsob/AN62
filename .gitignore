@@ -52,3 +52,5 @@ bin/
 node_modules/
 ## vscode
 .vscode/
+## rust
+target/
