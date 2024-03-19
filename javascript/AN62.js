@@ -20,7 +20,7 @@
  * @history 2020-08-25 encode(), decode() 만듦.<br/>
  */
 var AN62 = (function() {
-/*********/
+/*********
 	function num2hex(num, len) {
 		var i = 0, str = '', hex_tab = '0123456789ABCDEF';
 		for(i = 0; i < len; ++i) {
@@ -42,7 +42,7 @@ var AN62 = (function() {
 		}
 		console.log(line) ;
 	}
-/*********/
+*********/
 
 	if (!String.prototype.codePointAt) {
 		String.prototype.codePointAt = function (idx) {

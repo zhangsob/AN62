@@ -38,6 +38,7 @@ BASE64 Encode의 원리도
 - php : [PHP 예](#php)
 - kotlin : [Kotlin 예](#kotlin)
 - typescript : [TypeScript 예](#typescript)
+- rust : [Rust 예](#rust)
 
 <a name='java'></a>
 ## Java 예
@@ -810,4 +811,53 @@ tmp[82]:QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfh
 out[45]:http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
 可🐘
 src === out
+```
+
+<a name="rust"></a>
+## Rust 예
+```rust
+use an62;
+
+fn main() {
+	{
+		let src = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可" ;
+		println!("src[{}]: {}", src.len(), src) ;
+		let tmp = an62::encode(src);
+		println!("tmp[{}]: {}", tmp.len(), tmp) ;
+		let out = an62::decode(tmp.as_str()) ;
+		match out {
+			Some(out) => println!("out[{}]: {}", out.len(), out),
+			None => println!("None"),
+		}
+	}
+	{
+		// [ 코끼리 = Unicode : 01F418, UTF16 : D83D DC18, UTF8 : F0 9F 90 98 ]
+		let src = "http://test.com:8080/an62.do?name=가나다 ㄱㄴ※\n可🐘" ;
+		println!("src[{}]: {}", src.len(), src) ;
+		let tmp = an62::encode(src);
+		println!("tmp[{}]: {}", tmp.len(), tmp) ;
+		let out = an62::decode(tmp.as_str()) ;
+		match out {
+			Some(out) => {
+							println!("out[{}]: {}", out.len(), out) ;
+							if src == out {	println!("src == out") ;	}
+						 },
+			None => println!("None"),
+		}
+	}
+}
+```
+-----------------------------------------------------------------------------------
+```
+src[57]: http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可
+tmp[76]: QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39
+out[57]: http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可
+src[61]: http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可🐘
+tmp[82]: QJPMSGcDBxKqT59pP30lEfGUE9WZOXhdCdieS1KqOXeRFbUNWTlJcWWwfKzvXQYGXQk6WQfhvp39ybpT2S
+out[61]: http://test.com:8080/an62.do?name=가나다 ㄱㄴ※
+可🐘
+src == out
 ```
